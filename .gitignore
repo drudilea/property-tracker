@@ -1,0 +1,8 @@
+node_modules/
+dist/
+.env
+data/
+.browser-profile/
+.claude/
+*.log
+.DS_Store
