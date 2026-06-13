@@ -1,0 +1,58 @@
+import { app, BrowserWindow } from 'electron';
+import type { Tray } from 'electron';
+import { join } from 'node:path';
+import { registerIpcHandlers } from './ipc';
+import { createTray } from './tray';
+
+const CONFIG_PATH = join(app.getPath('userData'), 'config.json');
+
+let mainWindow: BrowserWindow | null = null;
+let tray: Tray | null = null;
+let isQuitting = false;
+
+function createWindow(): BrowserWindow {
+  const win = new BrowserWindow({
+    width: 420,
+    height: 560,
+    show: true,
+    webPreferences: {
+      preload: join(__dirname, '../preload/index.mjs'),
+      contextIsolation: true,
+      nodeIntegration: false,
+      sandbox: false,
+    },
+  });
+
+  if (process.env.ELECTRON_RENDERER_URL) {
+    win.loadURL(process.env.ELECTRON_RENDERER_URL);
+  } else {
+    win.loadFile(join(__dirname, '../renderer/index.html'));
+  }
+
+  mainWindow = win;
+  win.on('close', (e) => {
+    if (!isQuitting) {
+      e.preventDefault();
+      win.hide();
+    }
+  });
+  return win;
+}
+
+app.whenReady().then(() => {
+  registerIpcHandlers(CONFIG_PATH);
+  createWindow();
+  tray = createTray(() => mainWindow);
+
+  app.on('activate', () => {
+    if (BrowserWindow.getAllWindows().length === 0) createWindow();
+  });
+});
+
+app.on('window-all-closed', () => {
+  if (process.platform !== 'darwin') app.quit();
+});
+
+app.on('before-quit', () => {
+  isQuitting = true;
+});

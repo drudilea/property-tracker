@@ -3,11 +3,18 @@
   "version": "1.0.0",
   "description": "Idealista apartment tracker with Notion integration",
   "type": "module",
+  "main": "out/main/index.js",
   "scripts": {
-    "build": "tsc",
-    "init:browser": "tsx src/init-browser.ts",
+    "dev": "electron-vite dev",
+    "build:app": "electron-vite build",
+    "preview": "electron-vite preview",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "pack": "electron-vite build && electron-builder",
     "scrape": "tsx src/index.ts",
     "bot": "tsx src/bot.ts",
+    "build": "tsc",
+    "init:browser": "tsx src/init-browser.ts",
     "init:browser:dist": "node dist/init-browser.js",
     "scrape:dist": "node dist/index.js",
     "bot:dist": "node dist/bot.js",
@@ -23,7 +30,11 @@
   },
   "devDependencies": {
     "@types/node": "^25.6.0",
+    "electron": "^42.4.0",
+    "electron-builder": "^26.15.3",
+    "electron-vite": "^5.0.0",
     "tsx": "^4.21.0",
-    "typescript": "^6.0.2"
+    "typescript": "^6.0.2",
+    "vitest": "^4.1.8"
   }
 }

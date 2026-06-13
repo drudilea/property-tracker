@@ -1,0 +1,12 @@
+appId: com.idealista.tracker
+productName: Idealista Tracker
+directories:
+  output: release
+files:
+  - out/**/*
+  - package.json
+mac:
+  target: dir
+  category: public.app-category.utilities
+win:
+  target: portable
