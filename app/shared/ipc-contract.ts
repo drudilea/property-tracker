@@ -34,6 +34,8 @@ export const IpcChannel = {
   IdealistaLogin: 'idealista:login',
   CreateVisit: 'visit:create',
   OpenExternal: 'shell:openExternal',
+  TelegramApply: 'telegram:apply',
+  TelegramStatus: 'telegram:status',
 } as const;
 
 /** Event channels the main process pushes to the renderer. */
@@ -58,5 +60,7 @@ export interface RendererApi {
   loginIdealista(): Promise<{ ok: boolean; error?: string }>;
   createVisit(idealistaId: string, startISO: string): Promise<CreateVisitResult>;
   openExternal(url: string): Promise<void>;
+  applyTelegram(): Promise<{ ok: boolean; error?: string }>;
+  telegramRunning(): Promise<boolean>;
   onStatusChanged(listener: (status: AppStatus) => void): () => void;
 }

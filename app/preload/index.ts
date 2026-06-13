@@ -14,6 +14,8 @@ const api: RendererApi = {
   loginIdealista: () => ipcRenderer.invoke(IpcChannel.IdealistaLogin),
   createVisit: (idealistaId: string, startISO: string) => ipcRenderer.invoke(IpcChannel.CreateVisit, idealistaId, startISO),
   openExternal: (url: string) => ipcRenderer.invoke(IpcChannel.OpenExternal, url),
+  applyTelegram: () => ipcRenderer.invoke(IpcChannel.TelegramApply),
+  telegramRunning: () => ipcRenderer.invoke(IpcChannel.TelegramStatus),
   onStatusChanged: (listener: (status: AppStatus) => void) => {
     const handler = (_e: unknown, status: AppStatus) => listener(status);
     ipcRenderer.on(IpcEvent.StatusChanged, handler);

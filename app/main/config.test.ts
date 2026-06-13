@@ -38,4 +38,9 @@ describe('config', () => {
     writeFileSync(file, '{ not json');
     expect(loadConfig(file)).toEqual(DEFAULT_CONFIG);
   });
+
+  it('defaults the telegram fields to null', () => {
+    expect(DEFAULT_CONFIG.telegramBotToken).toBeNull();
+    expect(DEFAULT_CONFIG.telegramAllowedUserId).toBeNull();
+  });
 });

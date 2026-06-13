@@ -97,6 +97,19 @@ async function render(): Promise<void> {
     });
     visitStatus.appendChild(link);
   });
+
+  const tgToken = document.querySelector<HTMLInputElement>('#tg-token')!;
+  const tgStatus = document.querySelector<HTMLParagraphElement>('#tg-status')!;
+  tgToken.value = config.telegramBotToken ?? '';
+  window.api.telegramRunning().then((on) => {
+    tgStatus.textContent = on ? '✓ Bot activo' : 'Bot apagado';
+  });
+  document.querySelector('#tg-apply')!.addEventListener('click', async () => {
+    await window.api.setConfig({ ...config, telegramBotToken: tgToken.value || null });
+    tgStatus.textContent = 'Aplicando…';
+    const r = await window.api.applyTelegram();
+    tgStatus.textContent = r.ok ? '✓ Bot activo' : `✗ ${r.error}`;
+  });
 }
 
 render();

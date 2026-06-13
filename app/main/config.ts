@@ -8,6 +8,8 @@ export interface AppConfig {
   browserProfileDir: string | null;
   pollIntervalMinutes: number;
   launchOnStartup: boolean;
+  telegramBotToken: string | null;
+  telegramAllowedUserId: number | null;
 }
 
 export const DEFAULT_CONFIG: AppConfig = {
@@ -16,6 +18,8 @@ export const DEFAULT_CONFIG: AppConfig = {
   browserProfileDir: null,
   pollIntervalMinutes: 15,
   launchOnStartup: false,
+  telegramBotToken: null,
+  telegramAllowedUserId: null,
 };
 
 /** Load config from disk, merging a partial/missing/corrupt file over defaults. */

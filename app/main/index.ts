@@ -5,6 +5,8 @@ import { registerIpcHandlers } from './ipc';
 import { createTray } from './tray';
 import { installContextMenu } from './context-menu';
 import { closeBrowser, configureScraperPaths } from '../../src/scraper';
+import { loadConfig } from './config';
+import { startTelegramBot, stopTelegramBot } from './telegram-service';
 import appIconPath from './assets/icon.png?asset';
 
 const CONFIG_PATH = join(app.getPath('userData'), 'config.json');
@@ -57,6 +59,7 @@ app.whenReady().then(() => {
     app.dock.setIcon(appIconPath);
   }
   registerIpcHandlers(CONFIG_PATH);
+  if (loadConfig(CONFIG_PATH).telegramBotToken) void startTelegramBot(CONFIG_PATH);
   createWindow();
   tray = createTray(() => mainWindow);
 
@@ -72,4 +75,5 @@ app.on('window-all-closed', () => {
 app.on('before-quit', () => {
   isQuitting = true;
   void closeBrowser();
+  void stopTelegramBot();
 });
