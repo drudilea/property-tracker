@@ -12,6 +12,8 @@ const api: RendererApi = {
   saveToNotion: (apartment: import('../../src/types').Apartment) => ipcRenderer.invoke(IpcChannel.NotionSave, apartment),
   syncFavorites: () => ipcRenderer.invoke(IpcChannel.FavoritesSync),
   loginIdealista: () => ipcRenderer.invoke(IpcChannel.IdealistaLogin),
+  createVisit: (idealistaId: string, startISO: string) => ipcRenderer.invoke(IpcChannel.CreateVisit, idealistaId, startISO),
+  openExternal: (url: string) => ipcRenderer.invoke(IpcChannel.OpenExternal, url),
   onStatusChanged: (listener: (status: AppStatus) => void) => {
     const handler = (_e: unknown, status: AppStatus) => listener(status);
     ipcRenderer.on(IpcEvent.StatusChanged, handler);

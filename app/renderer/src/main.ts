@@ -70,6 +70,33 @@ async function render(): Promise<void> {
       ? `✓ ${r.found} favoritos · ${r.created} nuevos · ${r.duplicates} ya estaban · ${r.failed} con error`
       : `✗ ${r.error}`;
   });
+
+  const visitId = document.querySelector<HTMLInputElement>('#visit-id')!;
+  const visitWhen = document.querySelector<HTMLInputElement>('#visit-when')!;
+  const visitStatus = document.querySelector<HTMLParagraphElement>('#visit-status')!;
+  document.querySelector('#create-visit')!.addEventListener('click', async () => {
+    const id = visitId.value.trim();
+    const when = visitWhen.value;
+    if (!id || !when) {
+      visitStatus.textContent = 'Completá el ID y la fecha/hora.';
+      return;
+    }
+    visitStatus.textContent = 'Creando visita…';
+    const r = await window.api.createVisit(id, when);
+    if (!r.ok) {
+      visitStatus.textContent = `✗ ${r.error}`;
+      return;
+    }
+    visitStatus.textContent = `✓ ${r.title} (visita_programada) · `;
+    const link = document.createElement('a');
+    link.textContent = 'Abrir en Google Calendar';
+    link.href = r.url;
+    link.addEventListener('click', (e) => {
+      e.preventDefault();
+      window.api.openExternal(r.url);
+    });
+    visitStatus.appendChild(link);
+  });
 }
 
 render();

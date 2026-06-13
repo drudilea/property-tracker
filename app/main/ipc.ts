@@ -1,4 +1,4 @@
-import { app, ipcMain } from 'electron';
+import { app, ipcMain, shell } from 'electron';
 import { IpcChannel } from '../shared/ipc-contract';
 import { scrapeListing } from './scraper-service';
 import type { AppStatus } from '../shared/ipc-contract';
@@ -7,6 +7,7 @@ import type { AppConfig } from './config';
 import { validateNotion, saveToNotion } from './notion-service';
 import { syncFavorites } from './favorites-service';
 import { loginIdealista } from './idealista-service';
+import { createVisit } from './visit-service';
 import type { Apartment } from '../../src/types';
 
 /** Register all ipcMain handlers. `configPath` is resolved once at startup. */
@@ -33,4 +34,8 @@ export function registerIpcHandlers(configPath: string): void {
   ipcMain.handle(IpcChannel.FavoritesSync, () => syncFavorites(configPath));
 
   ipcMain.handle(IpcChannel.IdealistaLogin, () => loginIdealista());
+
+  ipcMain.handle(IpcChannel.CreateVisit, (_e, idealistaId: string, startISO: string) => createVisit(configPath, idealistaId, startISO));
+
+  ipcMain.handle(IpcChannel.OpenExternal, (_e, url: string) => shell.openExternal(url));
 }

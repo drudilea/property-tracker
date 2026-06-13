@@ -18,6 +18,10 @@ export interface FavoritesSyncResult {
   failed: number;
 }
 
+export type CreateVisitResult =
+  | { ok: true; url: string; title: string }
+  | { ok: false; error: string };
+
 /** IPC channels the renderer may invoke on the main process. */
 export const IpcChannel = {
   GetConfig: 'config:get',
@@ -28,6 +32,8 @@ export const IpcChannel = {
   NotionSave: 'notion:save',
   FavoritesSync: 'favorites:sync',
   IdealistaLogin: 'idealista:login',
+  CreateVisit: 'visit:create',
+  OpenExternal: 'shell:openExternal',
 } as const;
 
 /** Event channels the main process pushes to the renderer. */
@@ -50,5 +56,7 @@ export interface RendererApi {
   saveToNotion(apartment: Apartment): Promise<NotionSaveResult>;
   syncFavorites(): Promise<FavoritesSyncResult>;
   loginIdealista(): Promise<{ ok: boolean; error?: string }>;
+  createVisit(idealistaId: string, startISO: string): Promise<CreateVisitResult>;
+  openExternal(url: string): Promise<void>;
   onStatusChanged(listener: (status: AppStatus) => void): () => void;
 }
