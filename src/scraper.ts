@@ -3,10 +3,22 @@ import { mkdir, writeFile, rm } from 'fs/promises';
 import { join } from 'path';
 import type { Apartment } from './types.js';
 
-const DATA_DIR = join(process.cwd(), 'data');
-const IMAGES_DIR = join(DATA_DIR, 'images');
-const SNAPSHOTS_DIR = join(DATA_DIR, 'snapshots');
-const BROWSER_PROFILE_DIR = join(process.cwd(), '.browser-profile');
+// Writable locations. Default to cwd (legacy CLI); the Electron app overrides
+// these with app.getPath('userData') via configureScraperPaths().
+let dataDir = join(process.cwd(), 'data');
+let browserProfileDir = join(process.cwd(), '.browser-profile');
+
+const imagesDir = () => join(dataDir, 'images');
+const snapshotsDir = () => join(dataDir, 'snapshots');
+
+/** Set writable paths at runtime (Electron passes userData-based dirs). */
+export function configureScraperPaths(opts: {
+  dataDir?: string;
+  browserProfileDir?: string;
+}): void {
+  if (opts.dataDir) dataDir = opts.dataDir;
+  if (opts.browserProfileDir) browserProfileDir = opts.browserProfileDir;
+}
 const IDEALISTA_HOME_URL = 'https://www.idealista.com/';
 const FAVORITES_URL = 'https://www.idealista.com/usuario/favoritos/';
 
@@ -48,7 +60,7 @@ async function downloadImages(
   urls: string[],
   idealistaId: string,
 ): Promise<void> {
-  const dir = join(IMAGES_DIR, idealistaId);
+  const dir = join(imagesDir(), idealistaId);
   await mkdir(dir, { recursive: true });
 
   const downloads = urls.map(async (url, i) => {
@@ -67,11 +79,11 @@ async function downloadImages(
 }
 
 async function saveSnapshot(page: Page, idealistaId: string): Promise<void> {
-  await mkdir(SNAPSHOTS_DIR, { recursive: true });
+  await mkdir(snapshotsDir(), { recursive: true });
   const html = await page.content();
   const timestamp = new Date().toISOString().split('T')[0];
   await writeFile(
-    join(SNAPSHOTS_DIR, `${idealistaId}_${timestamp}.html`),
+    join(snapshotsDir(), `${idealistaId}_${timestamp}.html`),
     html,
   );
 }
@@ -113,7 +125,7 @@ function extractFloor(features: string[]): string | null {
 }
 
 function launchContext(): Promise<BrowserContext> {
-  return chromium.launchPersistentContext(BROWSER_PROFILE_DIR, {
+  return chromium.launchPersistentContext(browserProfileDir, {
     headless: false,
     channel: 'chrome',
     args: ['--disable-blink-features=AutomationControlled', '--no-sandbox'],
@@ -125,7 +137,7 @@ function launchContext(): Promise<BrowserContext> {
 /** Remove stale single-instance lock files left by a crashed Chrome run. */
 async function clearProfileLocks(): Promise<void> {
   for (const name of ['SingletonLock', 'SingletonSocket', 'SingletonCookie']) {
-    await rm(join(BROWSER_PROFILE_DIR, name), { force: true }).catch(() => {});
+    await rm(join(browserProfileDir, name), { force: true }).catch(() => {});
   }
 }
 

@@ -3,7 +3,8 @@ import type { Tray } from 'electron';
 import { join } from 'node:path';
 import { registerIpcHandlers } from './ipc';
 import { createTray } from './tray';
-import { closeBrowser } from '../../src/scraper';
+import { closeBrowser, configureScraperPaths } from '../../src/scraper';
+import appIconPath from './assets/icon.png?asset';
 
 const CONFIG_PATH = join(app.getPath('userData'), 'config.json');
 
@@ -42,6 +43,17 @@ function createWindow(): BrowserWindow {
 }
 
 app.whenReady().then(() => {
+  const userData = app.getPath('userData');
+  configureScraperPaths({
+    dataDir: join(userData, 'data'),
+    browserProfileDir: join(userData, '.browser-profile'),
+  });
+
+  // In dev the dock shows the default Electron icon; set ours. (Packaged builds
+  // get the icon from electron-builder.)
+  if (process.platform === 'darwin' && app.dock) {
+    app.dock.setIcon(appIconPath);
+  }
   registerIpcHandlers(CONFIG_PATH);
   createWindow();
   tray = createTray(() => mainWindow);

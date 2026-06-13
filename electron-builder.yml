@@ -5,8 +5,14 @@ directories:
 files:
   - out/**/*
   - package.json
+# Playwright spawns its driver from disk, so it cannot run from inside app.asar.
+asarUnpack:
+  - '**/node_modules/playwright/**'
+  - '**/node_modules/playwright-core/**'
 mac:
   target: dir
   category: public.app-category.utilities
+  icon: app/main/assets/icon.png
 win:
   target: portable
+  icon: app/main/assets/icon.png

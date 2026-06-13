@@ -3,7 +3,10 @@ import trayIconPath from './assets/tray-icon.png?asset';
 
 /** Create the system tray. Keeps a reference so it is not garbage-collected. */
 export function createTray(getWindow: () => BrowserWindow | null): Tray {
-  const icon = nativeImage.createFromPath(trayIconPath);
+  // The menu bar is ~22pt tall; resize so the icon isn't oversized.
+  const icon = nativeImage
+    .createFromPath(trayIconPath)
+    .resize({ width: 18, height: 18 });
   const tray = new Tray(icon);
   tray.setToolTip('Idealista Tracker');
 
