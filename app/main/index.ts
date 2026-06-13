@@ -3,6 +3,7 @@ import type { Tray } from 'electron';
 import { join } from 'node:path';
 import { registerIpcHandlers } from './ipc';
 import { createTray } from './tray';
+import { installContextMenu } from './context-menu';
 import { closeBrowser, configureScraperPaths } from '../../src/scraper';
 import appIconPath from './assets/icon.png?asset';
 
@@ -33,6 +34,7 @@ function createWindow(): BrowserWindow {
   }
 
   mainWindow = win;
+  installContextMenu(win);
   win.on('close', (e) => {
     if (!isQuitting) {
       e.preventDefault();
