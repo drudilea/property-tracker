@@ -87,16 +87,27 @@ const DB_SCHEMA: Record<string, object> = {
 };
 
 let schemaInitialized = false;
+let titlePropertyName = "Name";
 
 async function ensureDatabaseSchema(): Promise<void> {
   if (schemaInitialized) return;
 
   const db = await notionFetch(`/databases/${DATABASE_ID}`);
-  const existingProps = new Set(Object.keys(db.properties ?? {}));
+  const existingProps: Record<string, any> = db.properties ?? {};
+
+  // Detect the actual title property name (Notion allows renaming it)
+  const titleEntry = Object.entries(existingProps).find(
+    ([, prop]) => prop.type === "title"
+  );
+  if (titleEntry) {
+    titlePropertyName = titleEntry[0];
+  }
+
+  const existingPropNames = new Set(Object.keys(existingProps));
   const missingProps: Record<string, object> = {};
 
   for (const [name, config] of Object.entries(DB_SCHEMA)) {
-    if (!existingProps.has(name)) {
+    if (!existingPropNames.has(name)) {
       missingProps[name] = config;
     }
   }
@@ -129,7 +140,7 @@ export async function findByIdealistaId(
 
 function buildProperties(apartment: Apartment) {
   return {
-    Name: {
+    [titlePropertyName]: {
       title: [{ text: { content: apartment.title || "Sin título" } }],
     },
     URL: { url: apartment.url },
@@ -326,7 +337,7 @@ function extractProperty(page: any, name: string, type: string): any {
 function pageToSearchResult(page: any): NotionSearchResult {
   return {
     pageId: page.id,
-    title: extractProperty(page, "Name", "title"),
+    title: extractProperty(page, titlePropertyName, "title"),
     idealistaId: extractProperty(page, "Idealista ID", "rich_text"),
     price: extractProperty(page, "Precio", "number"),
     location: extractProperty(page, "Ubicación", "rich_text"),
@@ -346,7 +357,7 @@ export async function searchApartments(
         { property: "Contacto teléfono", phone_number: { contains: query } },
         { property: "Contacto nombre", rich_text: { contains: query } },
         { property: "Idealista ID", rich_text: { equals: query } },
-        { property: "Name", title: { contains: query } },
+        { property: titlePropertyName, title: { contains: query } },
       ],
     },
     page_size: 10,
@@ -409,14 +420,14 @@ export async function findByQuery(
     return {
       pageId: byId,
       idealistaId: query,
-      title: extractProperty(page, "Name", "title"),
+      title: extractProperty(page, titlePropertyName, "title"),
     };
   }
 
   // Fallback: search by title
   const data = await notionFetch(`/databases/${DATABASE_ID}/query`, {
     filter: {
-      property: "Name",
+      property: titlePropertyName,
       title: { contains: query },
     },
     page_size: 1,
@@ -428,6 +439,6 @@ export async function findByQuery(
   return {
     pageId: page.id,
     idealistaId: extractProperty(page, "Idealista ID", "rich_text"),
-    title: extractProperty(page, "Name", "title"),
+    title: extractProperty(page, titlePropertyName, "title"),
   };
 }

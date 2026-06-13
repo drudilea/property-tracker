@@ -94,6 +94,46 @@ Stop the bot:
 pkill -f "tsx src/bot"
 ```
 
+## Windows portable package
+
+If you want to hand someone a ready-to-run `.zip` for Windows, the simplest approach is:
+
+1. Open the project on a Windows machine
+2. Install dependencies with `npm install`
+3. Build a portable folder with:
+
+```bash
+npm run package:portable
+```
+
+If you already filled the real `.env` with the recipient's keys and want that file copied into the final package, run:
+
+```bash
+npm run package:portable -- --env-source=.env
+```
+
+That creates `portable/idealista-bot/` with:
+
+- compiled app in `dist/`
+- dependencies in `node_modules/`
+- empty runtime folders (`data/`, `logs/`, `.browser-profile/`)
+- Windows launchers:
+  - `Inicializar Navegador.cmd`
+  - `Iniciar Bot.cmd`
+  - `Detener Bot.cmd`
+  - `Ver Logs.cmd`
+
+Then zip that `portable/idealista-bot/` folder and send it.
+
+### Windows notes
+
+- Build the portable folder on Windows, not macOS, for best compatibility
+- Google Chrome must be installed on the Windows machine
+- Node.js 18+ must be installed on the Windows machine for this first portable version
+- The browser profile inside `.browser-profile/` is local to that folder and should be initialized on the same Windows machine where it will run
+- On first run, execute `Inicializar Navegador.cmd`, accept cookies and/or log in to Idealista, then close Chrome
+- The bot keeps running after double click; it stops when the PC shuts down or when `Detener Bot.cmd` is used
+
 ## Bot commands
 
 | Command     | Description               | Example                                        |

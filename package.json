@@ -4,8 +4,14 @@
   "description": "Idealista apartment tracker with Notion integration",
   "type": "module",
   "scripts": {
+    "build": "tsc",
+    "init:browser": "tsx src/init-browser.ts",
     "scrape": "tsx src/index.ts",
-    "bot": "tsx src/bot.ts"
+    "bot": "tsx src/bot.ts",
+    "init:browser:dist": "node dist/init-browser.js",
+    "scrape:dist": "node dist/index.js",
+    "bot:dist": "node dist/bot.js",
+    "package:portable": "npm run build && node scripts/build-portable.mjs"
   },
   "keywords": [],
   "author": "",

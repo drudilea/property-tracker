@@ -1,12 +1,13 @@
-import { chromium, type Page } from "playwright";
-import { mkdir, writeFile } from "fs/promises";
-import { join } from "path";
-import type { Apartment } from "./types.js";
+import { chromium, type Page } from 'playwright';
+import { mkdir, writeFile } from 'fs/promises';
+import { join } from 'path';
+import type { Apartment } from './types.js';
 
-const DATA_DIR = join(process.cwd(), "data");
-const IMAGES_DIR = join(DATA_DIR, "images");
-const SNAPSHOTS_DIR = join(DATA_DIR, "snapshots");
-const BROWSER_PROFILE_DIR = join(process.cwd(), ".browser-profile");
+const DATA_DIR = join(process.cwd(), 'data');
+const IMAGES_DIR = join(DATA_DIR, 'images');
+const SNAPSHOTS_DIR = join(DATA_DIR, 'snapshots');
+const BROWSER_PROFILE_DIR = join(process.cwd(), '.browser-profile');
+const IDEALISTA_HOME_URL = 'https://www.idealista.com/';
 
 function extractIdealistaId(url: string): string {
   const match = url.match(/\/inmueble\/(\d+)/);
@@ -15,7 +16,7 @@ function extractIdealistaId(url: string): string {
 }
 
 function parsePrice(text: string): number | null {
-  const cleaned = text.replace(/[^\d]/g, "");
+  const cleaned = text.replace(/[^\d]/g, '');
   return cleaned ? parseInt(cleaned, 10) : null;
 }
 
@@ -29,9 +30,7 @@ async function extractPhotos(page: Page): Promise<string[]> {
 
   // The fullScreenGalleryPics object uses unquoted keys (not valid JSON),
   // so we extract imageDataService URLs directly via regex.
-  const galleryMatch = content.match(
-    /fullScreenGalleryPics\s*:\s*\[.+?\]/s
-  );
+  const galleryMatch = content.match(/fullScreenGalleryPics\s*:\s*\[.+?\]/s);
   if (!galleryMatch) return [];
 
   const urlRegex = /imageDataService:"(https?:\/\/[^"]+\.jpg)"/g;
@@ -44,7 +43,10 @@ async function extractPhotos(page: Page): Promise<string[]> {
   return urls;
 }
 
-async function downloadImages(urls: string[], idealistaId: string): Promise<void> {
+async function downloadImages(
+  urls: string[],
+  idealistaId: string,
+): Promise<void> {
   const dir = join(IMAGES_DIR, idealistaId);
   await mkdir(dir, { recursive: true });
 
@@ -53,7 +55,7 @@ async function downloadImages(urls: string[], idealistaId: string): Promise<void
       const res = await fetch(url);
       if (!res.ok) return;
       const buffer = Buffer.from(await res.arrayBuffer());
-      const ext = url.includes(".png") ? "png" : "jpg";
+      const ext = url.includes('.png') ? 'png' : 'jpg';
       await writeFile(join(dir, `${i + 1}.${ext}`), buffer);
     } catch {
       // Skip failed downloads silently
@@ -66,15 +68,15 @@ async function downloadImages(urls: string[], idealistaId: string): Promise<void
 async function saveSnapshot(page: Page, idealistaId: string): Promise<void> {
   await mkdir(SNAPSHOTS_DIR, { recursive: true });
   const html = await page.content();
-  const timestamp = new Date().toISOString().split("T")[0];
+  const timestamp = new Date().toISOString().split('T')[0];
   await writeFile(
     join(SNAPSHOTS_DIR, `${idealistaId}_${timestamp}.html`),
-    html
+    html,
   );
 }
 
 function hasFeature(features: string[], ...keywords: string[]): boolean | null {
-  const text = features.join(" ").toLowerCase();
+  const text = features.join(' ').toLowerCase();
   for (const kw of keywords) {
     if (text.includes(kw.toLowerCase())) return true;
   }
@@ -82,13 +84,14 @@ function hasFeature(features: string[], ...keywords: string[]): boolean | null {
 }
 
 function extractHeatingType(features: string[]): string | null {
-  const text = features.join(" ").toLowerCase();
-  if (text.includes("calefacción individual: gas")) return "gas";
-  if (text.includes("calefacción central: gas")) return "gas central";
-  if (text.includes("calefacción individual: eléctric")) return "eléctrica";
-  if (text.includes("calefacción central: eléctric")) return "eléctrica central";
-  if (text.includes("calefacción")) return "sí (tipo desconocido)";
-  if (text.includes("no dispone de calefacción")) return "no tiene";
+  const text = features.join(' ').toLowerCase();
+  if (text.includes('calefacción individual: gas')) return 'gas';
+  if (text.includes('calefacción central: gas')) return 'gas central';
+  if (text.includes('calefacción individual: eléctric')) return 'eléctrica';
+  if (text.includes('calefacción central: eléctric'))
+    return 'eléctrica central';
+  if (text.includes('calefacción')) return 'sí (tipo desconocido)';
+  if (text.includes('no dispone de calefacción')) return 'no tiene';
   return null;
 }
 
@@ -97,10 +100,10 @@ function extractFloor(features: string[]): string | null {
     // Matches patterns like "1ª planta", "Bajo", "Entreplanta", "Planta 3ª"
     const lower = f.toLowerCase();
     if (
-      lower.includes("planta") ||
-      lower === "bajo" ||
-      lower === "entreplanta" ||
-      lower === "sótano"
+      lower.includes('planta') ||
+      lower === 'bajo' ||
+      lower === 'entreplanta' ||
+      lower === 'sótano'
     ) {
       return f.trim();
     }
@@ -108,141 +111,288 @@ function extractFloor(features: string[]): string | null {
   return null;
 }
 
+async function createBrowserContext() {
+  return chromium.launchPersistentContext(BROWSER_PROFILE_DIR, {
+    headless: false,
+    channel: 'chrome',
+    args: ['--disable-blink-features=AutomationControlled', '--no-sandbox'],
+    viewport: { width: 1440, height: 900 },
+    locale: 'es-ES',
+  });
+}
+
+async function acceptCookieBanner(page: Page): Promise<void> {
+  const selectors = [
+    '#didomi-notice-agree-button',
+    "button:has-text('Aceptar')",
+    "button:has-text('Acepto')",
+    "button:has-text('Accept')",
+    "button:has-text('Entendido')",
+    "button:has-text('Estoy de acuerdo')",
+  ];
+
+  for (const selector of selectors) {
+    const clicked = await page
+      .locator(selector)
+      .first()
+      .click({ timeout: 1500 })
+      .then(
+        () => true,
+        () => false,
+      );
+
+    if (clicked) {
+      console.log('Cookie banner accepted.');
+      await page.waitForTimeout(1000);
+      return;
+    }
+  }
+}
+
+async function getBlockingReason(page: Page): Promise<string | null> {
+  const currentUrl = page.url();
+  const blockedFrameVisible = await page
+    .locator("iframe[src*='datadome'], iframe[title*='DataDome']")
+    .first()
+    .isVisible()
+    .catch(() => false);
+  if (blockedFrameVisible) {
+    return 'Idealista blocked access (DataDome CAPTCHA). Try again later or use a different IP.';
+  }
+
+  const bodyText = (
+    (await page
+      .locator('body')
+      .innerText()
+      .catch(() => '')) ?? ''
+  )
+    .toLowerCase()
+    .replace(/\s+/g, ' ');
+
+  if (
+    bodyText.includes('verifica que eres humano') ||
+    bodyText.includes('confirma que eres humano') ||
+    bodyText.includes('actividad inusual') ||
+    currentUrl.includes('challenge') ||
+    currentUrl.includes('datadome')
+  ) {
+    return 'Idealista blocked access (challenge/CAPTCHA). Try again later or use a different IP.';
+  }
+
+  const loginFormVisible = await page
+    .locator("form[action*='login'], input[type='password']")
+    .first()
+    .isVisible()
+    .catch(() => false);
+  if (currentUrl.includes('/login') || loginFormVisible) {
+    return [
+      'Idealista requires login for this browser profile.',
+      'Run the browser initialization once in this same folder, sign in if needed, then close Chrome and retry.',
+    ].join(' ');
+  }
+
+  const cookieBannerVisible = await page
+    .locator('#didomi-notice, .didomi-popup-container, .didomi-consent-popup')
+    .first()
+    .isVisible()
+    .catch(() => false);
+  if (cookieBannerVisible) {
+    return [
+      'Idealista is showing the cookie consent screen for this browser profile.',
+      'Run the browser initialization once in this same folder, accept cookies, then close Chrome and retry.',
+    ].join(' ');
+  }
+
+  return null;
+}
+
+async function ensureListingPageReady(page: Page): Promise<void> {
+  await acceptCookieBanner(page);
+  await page
+    .waitForLoadState('networkidle', { timeout: 10000 })
+    .catch(() => {});
+  await page.waitForTimeout(1500);
+
+  const hasTitle = await page
+    .locator('span.main-info__title-main')
+    .count()
+    .then(
+      (count) => count > 0,
+      () => false,
+    );
+  const hasPrice = await page
+    .locator('span.info-data-price')
+    .count()
+    .then(
+      (count) => count > 0,
+      () => false,
+    );
+
+  if (hasTitle || hasPrice) {
+    return;
+  }
+
+  const blockingReason = await getBlockingReason(page);
+  if (blockingReason) {
+    throw new Error(blockingReason);
+  }
+
+  const pageTitle = await page.title().catch(() => '');
+  throw new Error(
+    [
+      `Could not detect the expected Idealista listing content (current page: ${page.url()}).`,
+      pageTitle ? `Browser title: ${pageTitle}.` : null,
+      'If this is a new portable folder or a different computer, initialize the browser profile in this same folder first.',
+    ]
+      .filter(Boolean)
+      .join(' '),
+  );
+}
+
+export async function initializeBrowserProfile(): Promise<void> {
+  const context = await createBrowserContext();
+  const page = context.pages()[0] ?? (await context.newPage());
+
+  console.log('Opening Chrome with the persistent profile for this folder...');
+  console.log('1. Accept cookies if asked.');
+  console.log('2. Sign in to Idealista if needed.');
+  console.log('3. Close the Chrome window when done.');
+
+  await page.goto(IDEALISTA_HOME_URL, {
+    waitUntil: 'domcontentloaded',
+    timeout: 30000,
+  });
+
+  await acceptCookieBanner(page);
+  await context.waitForEvent('close');
+}
+
 export async function scrape(url: string): Promise<Apartment> {
   const idealistaId = extractIdealistaId(url);
 
   // Use persistent context with real Chrome to avoid anti-bot detection.
   // First run may require manual login to idealista.
-  const context = await chromium.launchPersistentContext(BROWSER_PROFILE_DIR, {
-    headless: false,
-    channel: "chrome",
-    args: [
-      "--disable-blink-features=AutomationControlled",
-      "--no-sandbox",
-    ],
-    viewport: { width: 1440, height: 900 },
-    locale: "es-ES",
-  });
+  const context = await createBrowserContext();
 
-  const page = context.pages()[0] ?? await context.newPage();
+  const page = context.pages()[0] ?? (await context.newPage());
 
   try {
-    await page.goto(url, { waitUntil: "domcontentloaded", timeout: 30000 });
+    await page.goto(url, { waitUntil: 'domcontentloaded', timeout: 30000 });
 
-    // Wait for dynamic content to render
-    await page.waitForTimeout(2000);
-
-    // Check for CAPTCHA/block
-    const blocked = await page.$("iframe[src*='datadome']");
-    if (blocked) {
-      throw new Error(
-        "Idealista blocked access (DataDome CAPTCHA). Try again later or use a different IP."
-      );
-    }
+    await ensureListingPageReady(page);
 
     // Save HTML snapshot for offline testing
     await saveSnapshot(page, idealistaId);
 
     // Title
-    const titleEl = await page.$("span.main-info__title-main");
-    const title = titleEl ? (await titleEl.textContent())?.trim() ?? "" : "";
+    const titleEl = await page.$('span.main-info__title-main');
+    const title = titleEl ? ((await titleEl.textContent())?.trim() ?? '') : '';
 
     // Price
-    const priceEl = await page.$("span.info-data-price");
-    const priceText = priceEl ? (await priceEl.textContent())?.trim() ?? "" : "";
+    const priceEl = await page.$('span.info-data-price');
+    const priceText = priceEl
+      ? ((await priceEl.textContent())?.trim() ?? '')
+      : '';
     const price = parsePrice(priceText);
 
     // Location
-    const locationParts = await page.$$eval(
-      "li.header-map-list",
-      (els) => els.map((el) => el.textContent?.trim()).filter(Boolean)
-    ).catch(() => [] as string[]);
-    const minorEl = await page.$("span.main-info__title-minor");
-    const location = locationParts.join(", ") ||
-      (minorEl ? (await minorEl.textContent())?.trim() ?? "" : "");
+    const locationParts = await page
+      .$$eval('li.header-map-list', (els) =>
+        els.map((el) => el.textContent?.trim()).filter(Boolean),
+      )
+      .catch(() => [] as string[]);
+    const minorEl = await page.$('span.main-info__title-minor');
+    const location =
+      locationParts.join(', ') ||
+      (minorEl ? ((await minorEl.textContent())?.trim() ?? '') : '');
 
     // Description — preserve line breaks from the original HTML
-    const description = await page.$eval("div.comment", (el) => {
-      const html = el.innerHTML;
-      return html
-        .replace(/<br\s*\/?>/gi, "\n")
-        .replace(/<\/p>/gi, "\n")
-        .replace(/<\/div>/gi, "\n")
-        .replace(/<\/li>/gi, "\n")
-        .replace(/<[^>]+>/g, "")
-        .replace(/&nbsp;/g, " ")
-        .replace(/&amp;/g, "&")
-        .replace(/&lt;/g, "<")
-        .replace(/&gt;/g, ">")
-        .replace(/\n{3,}/g, "\n\n")
-        .trim();
-    }).catch(() => "");
+    const description = await page
+      .$eval('div.comment', (el) => {
+        const html = el.innerHTML;
+        return html
+          .replace(/<br\s*\/?>/gi, '\n')
+          .replace(/<\/p>/gi, '\n')
+          .replace(/<\/div>/gi, '\n')
+          .replace(/<\/li>/gi, '\n')
+          .replace(/<[^>]+>/g, '')
+          .replace(/&nbsp;/g, ' ')
+          .replace(/&amp;/g, '&')
+          .replace(/&lt;/g, '<')
+          .replace(/&gt;/g, '>')
+          .replace(/\n{3,}/g, '\n\n')
+          .trim();
+      })
+      .catch(() => '');
 
     // Top-level features (rooms, sqm)
-    const infoFeatures = await page.$$eval(
-      "div.info-features span",
-      (els) => els.map((el) => el.textContent?.trim() ?? "")
+    const infoFeatures = await page.$$eval('div.info-features span', (els) =>
+      els.map((el) => el.textContent?.trim() ?? ''),
     );
     const rooms = parseNumber(
-      infoFeatures.find((f) => f.includes("hab")) ?? ""
+      infoFeatures.find((f) => f.includes('hab')) ?? '',
     );
     const squareMeters = parseNumber(
-      infoFeatures.find((f) => f.includes("m²")) ?? ""
+      infoFeatures.find((f) => f.includes('m²')) ?? '',
     );
 
     // Detailed features list
     const allFeatures = await page.$$eval(
-      ".details-property-feature-one li, .details-property_features li",
-      (els) => els.map((el) => el.textContent?.trim() ?? "")
+      '.details-property-feature-one li, .details-property_features li',
+      (els) => els.map((el) => el.textContent?.trim() ?? ''),
     );
 
     // Contact info — use $() to avoid 30s timeouts on missing elements
-    let contactPhone = "";
-    let contactName = "";
+    let contactPhone = '';
+    let contactName = '';
 
     try {
       // Agency: name is in a.about-advertiser-name
       // Private: name is in span.particular
-      const agencyEl = await page.$("a.about-advertiser-name");
-      const particularEl = await page.$("span.particular");
+      const agencyEl = await page.$('a.about-advertiser-name');
+      const particularEl = await page.$('span.particular');
 
       if (agencyEl) {
-        contactName = (await agencyEl.textContent())?.trim() ?? "";
+        contactName = (await agencyEl.textContent())?.trim() ?? '';
       } else if (particularEl) {
-        contactName = (await particularEl.textContent())?.trim() ?? "";
+        contactName = (await particularEl.textContent())?.trim() ?? '';
       }
 
       // Clean up whitespace artifacts
-      contactName = contactName.replace(/\s+/g, " ").trim();
+      contactName = contactName.replace(/\s+/g, ' ').trim();
     } catch {
       // Contact name extraction failed
     }
 
     // Detect advertiser type
-    const typeLabel = await page.$eval(
-      ".professional-name .name",
-      (el) => el.textContent?.trim().toLowerCase() ?? ""
-    ).catch(() => "");
-    const contactType: "particular" | "inmobiliaria" | null =
-      typeLabel.includes("particular") ? "particular" :
-      typeLabel.includes("profesional") ? "inmobiliaria" :
-      null;
+    const typeLabel = await page
+      .$eval(
+        '.professional-name .name',
+        (el) => el.textContent?.trim().toLowerCase() ?? '',
+      )
+      .catch(() => '');
+    const contactType: 'particular' | 'inmobiliaria' | null =
+      typeLabel.includes('particular')
+        ? 'particular'
+        : typeLabel.includes('profesional')
+          ? 'inmobiliaria'
+          : null;
 
     try {
-      const phoneBtn = await page.$(".see-phones-btn, ._phone_btn");
+      const phoneBtn = await page.$('.see-phones-btn, ._phone_btn');
       if (phoneBtn) {
         await phoneBtn.click();
         await page.waitForTimeout(1500);
       }
       const phoneEl = await page.$("a[href^='tel:']");
       if (phoneEl) {
-        const href = await phoneEl.getAttribute("href");
-        contactPhone = href?.replace("tel:", "") ?? "";
+        const href = await phoneEl.getAttribute('href');
+        contactPhone = href?.replace('tel:', '') ?? '';
       }
       if (!contactPhone) {
-        const phoneTextEl = await page.$(".hidden-contact-phones_text");
+        const phoneTextEl = await page.$('.hidden-contact-phones_text');
         if (phoneTextEl) {
-          contactPhone = (await phoneTextEl.textContent())?.trim() ?? "";
+          contactPhone = (await phoneTextEl.textContent())?.trim() ?? '';
         }
       }
     } catch {
@@ -273,13 +423,13 @@ export async function scrape(url: string): Promise<Apartment> {
       contactPhone,
       contactType,
       photoUrls,
-      elevator: hasFeature(allFeatures, "ascensor"),
-      airConditioning: hasFeature(allFeatures, "aire acondicionado"),
+      elevator: hasFeature(allFeatures, 'ascensor'),
+      airConditioning: hasFeature(allFeatures, 'aire acondicionado'),
       heating: extractHeatingType(allFeatures),
-      naturalGas: hasFeature(allFeatures, "gas natural"),
-      pool: hasFeature(allFeatures, "piscina"),
-      parking: hasFeature(allFeatures, "garaje", "parking"),
-      storageRoom: hasFeature(allFeatures, "trastero"),
+      naturalGas: hasFeature(allFeatures, 'gas natural'),
+      pool: hasFeature(allFeatures, 'piscina'),
+      parking: hasFeature(allFeatures, 'garaje', 'parking'),
+      storageRoom: hasFeature(allFeatures, 'trastero'),
     };
 
     return apartment;
