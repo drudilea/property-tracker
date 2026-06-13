@@ -1,5 +1,5 @@
-import { chromium, type Page } from 'playwright';
-import { mkdir, writeFile } from 'fs/promises';
+import { chromium, type Page, type BrowserContext } from 'playwright';
+import { mkdir, writeFile, rm } from 'fs/promises';
 import { join } from 'path';
 import type { Apartment } from './types.js';
 
@@ -8,6 +8,7 @@ const IMAGES_DIR = join(DATA_DIR, 'images');
 const SNAPSHOTS_DIR = join(DATA_DIR, 'snapshots');
 const BROWSER_PROFILE_DIR = join(process.cwd(), '.browser-profile');
 const IDEALISTA_HOME_URL = 'https://www.idealista.com/';
+const FAVORITES_URL = 'https://www.idealista.com/usuario/favoritos/';
 
 function extractIdealistaId(url: string): string {
   const match = url.match(/\/inmueble\/(\d+)/);
@@ -111,7 +112,7 @@ function extractFloor(features: string[]): string | null {
   return null;
 }
 
-async function createBrowserContext() {
+function launchContext(): Promise<BrowserContext> {
   return chromium.launchPersistentContext(BROWSER_PROFILE_DIR, {
     headless: false,
     channel: 'chrome',
@@ -119,6 +120,47 @@ async function createBrowserContext() {
     viewport: { width: 1440, height: 900 },
     locale: 'es-ES',
   });
+}
+
+/** Remove stale single-instance lock files left by a crashed Chrome run. */
+async function clearProfileLocks(): Promise<void> {
+  for (const name of ['SingletonLock', 'SingletonSocket', 'SingletonCookie']) {
+    await rm(join(BROWSER_PROFILE_DIR, name), { force: true }).catch(() => {});
+  }
+}
+
+// One shared browser context, reused by login/scrape/favorites so the profile
+// is never opened twice at once (avoids the ProcessSingleton lock conflict).
+let sharedContext: BrowserContext | null = null;
+
+async function getContext(): Promise<BrowserContext> {
+  if (sharedContext) return sharedContext;
+  await clearProfileLocks();
+  const context = await launchContext();
+  context.on('close', () => {
+    sharedContext = null;
+  });
+  sharedContext = context;
+  return context;
+}
+
+/** Close the shared browser. Call on app quit so no Chrome is orphaned. */
+export async function closeBrowser(): Promise<void> {
+  const context = sharedContext;
+  sharedContext = null;
+  if (context) await context.close().catch(() => {});
+}
+
+/** Run a function with a fresh page on the shared context, closing it after.
+ * Lets a batch (e.g. favorites sync) reuse one tab across many listings. */
+export async function withPage<T>(fn: (page: Page) => Promise<T>): Promise<T> {
+  const context = await getContext();
+  const page = await context.newPage();
+  try {
+    return await fn(page);
+  } finally {
+    await page.close().catch(() => {});
+  }
 }
 
 async function acceptCookieBanner(page: Page): Promise<void> {
@@ -249,14 +291,53 @@ async function ensureListingPageReady(page: Page): Promise<void> {
   );
 }
 
-export async function initializeBrowserProfile(): Promise<void> {
-  const context = await createBrowserContext();
-  const page = context.pages()[0] ?? (await context.newPage());
+/** Read the user's Idealista favorites and return the listing URLs (deduped). */
+export async function readFavoriteUrls(existingPage?: Page): Promise<string[]> {
+  const context = existingPage ? null : await getContext();
+  const page = existingPage ?? (await context!.newPage());
+  try {
+    await page.goto(FAVORITES_URL, { waitUntil: 'domcontentloaded', timeout: 30000 });
+    await acceptCookieBanner(page);
+    await page.waitForLoadState('networkidle', { timeout: 10000 }).catch(() => {});
 
-  console.log('Opening Chrome with the persistent profile for this folder...');
-  console.log('1. Accept cookies if asked.');
-  console.log('2. Sign in to Idealista if needed.');
-  console.log('3. Close the Chrome window when done.');
+    const hasFavorites = await page
+      .locator('a[href*="/inmueble/"]')
+      .count()
+      .then((c) => c > 0, () => false);
+
+    if (!hasFavorites) {
+      const blockingReason = await getBlockingReason(page);
+      if (blockingReason) throw new Error(blockingReason);
+      return [];
+    }
+
+    const hrefs = await page.$$eval('a[href*="/inmueble/"]', (els) =>
+      els.map((el) => (el as HTMLAnchorElement).href),
+    );
+
+    const seen = new Set<string>();
+    const urls: string[] = [];
+    for (const href of hrefs) {
+      const match = href.match(/\/inmueble\/(\d+)/);
+      if (match && !seen.has(match[1])) {
+        seen.add(match[1]);
+        urls.push(`https://www.idealista.com/inmueble/${match[1]}/`);
+      }
+    }
+    return urls;
+  } finally {
+    if (!existingPage) await page.close().catch(() => {});
+  }
+}
+
+/** Open the shared browser at Idealista so the user can log in. By default it
+ * returns once the page is ready and leaves the window open (the session is
+ * reused by scrape/favorites). Pass waitForClose for the legacy CLI flow. */
+export async function initializeBrowserProfile(options?: {
+  waitForClose?: boolean;
+}): Promise<void> {
+  const context = await getContext();
+  const page = context.pages()[0] ?? (await context.newPage());
 
   await page.goto(IDEALISTA_HOME_URL, {
     waitUntil: 'domcontentloaded',
@@ -264,17 +345,20 @@ export async function initializeBrowserProfile(): Promise<void> {
   });
 
   await acceptCookieBanner(page);
-  await context.waitForEvent('close');
+
+  if (options?.waitForClose) {
+    await context.waitForEvent('close', { timeout: 0 });
+  }
 }
 
-export async function scrape(url: string): Promise<Apartment> {
+export async function scrape(url: string, existingPage?: Page): Promise<Apartment> {
   const idealistaId = extractIdealistaId(url);
 
-  // Use persistent context with real Chrome to avoid anti-bot detection.
-  // First run may require manual login to idealista.
-  const context = await createBrowserContext();
-
-  const page = context.pages()[0] ?? (await context.newPage());
+  // Reuse the shared persistent context (real Chrome) to avoid anti-bot
+  // detection. When given an existing page (tab), reuse it instead of opening a
+  // new one — favorites sync passes one page to navigate across many listings.
+  const context = existingPage ? null : await getContext();
+  const page = existingPage ?? (await context!.newPage());
 
   try {
     await page.goto(url, { waitUntil: 'domcontentloaded', timeout: 30000 });
@@ -434,6 +518,6 @@ export async function scrape(url: string): Promise<Apartment> {
 
     return apartment;
   } finally {
-    await context.close();
+    if (!existingPage) await page.close().catch(() => {});
   }
 }

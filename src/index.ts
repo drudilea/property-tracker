@@ -1,5 +1,5 @@
 import "dotenv/config";
-import { scrape } from "./scraper.js";
+import { scrape, closeBrowser } from "./scraper.js";
 import { saveApartment } from "./notion.js";
 
 const url = process.argv[2];
@@ -45,7 +45,9 @@ async function main() {
   }
 }
 
-main().catch((err) => {
-  console.error("\n✗ Error:", err.message);
-  process.exit(1);
-});
+main()
+  .catch((err) => {
+    console.error("\n✗ Error:", err.message);
+    process.exitCode = 1;
+  })
+  .finally(() => closeBrowser());

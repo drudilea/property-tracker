@@ -52,6 +52,24 @@ async function render(): Promise<void> {
       scrapeStatus.textContent = `Scrapeado, pero no se guardó en Notion: ${saveResult.error}`;
     }
   });
+
+  const loginStatus = document.querySelector<HTMLParagraphElement>('#login-status')!;
+  document.querySelector('#login-idealista')!.addEventListener('click', async () => {
+    loginStatus.textContent = 'Abriendo Chrome…';
+    const r = await window.api.loginIdealista();
+    loginStatus.textContent = r.ok
+      ? '✓ Chrome abierto. Iniciá sesión en Idealista ahí (no hace falta cerrarlo) y después tocá Sincronizar.'
+      : `✗ ${r.error}`;
+  });
+
+  const favStatus = document.querySelector<HTMLParagraphElement>('#fav-status')!;
+  document.querySelector('#sync-fav')!.addEventListener('click', async () => {
+    favStatus.textContent = 'Sincronizando favoritos… (se abre Chrome)';
+    const r = await window.api.syncFavorites();
+    favStatus.textContent = r.ok
+      ? `✓ ${r.found} favoritos · ${r.created} nuevos · ${r.duplicates} ya estaban · ${r.failed} con error`
+      : `✗ ${r.error}`;
+  });
 }
 
 render();

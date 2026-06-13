@@ -3,6 +3,7 @@ import type { Tray } from 'electron';
 import { join } from 'node:path';
 import { registerIpcHandlers } from './ipc';
 import { createTray } from './tray';
+import { closeBrowser } from '../../src/scraper';
 
 const CONFIG_PATH = join(app.getPath('userData'), 'config.json');
 
@@ -56,4 +57,5 @@ app.on('window-all-closed', () => {
 
 app.on('before-quit', () => {
   isQuitting = true;
+  void closeBrowser();
 });

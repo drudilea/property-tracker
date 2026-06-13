@@ -10,6 +10,8 @@ const api: RendererApi = {
   scrape: (url: string) => ipcRenderer.invoke(IpcChannel.Scrape, url),
   validateNotion: () => ipcRenderer.invoke(IpcChannel.NotionValidate),
   saveToNotion: (apartment: import('../../src/types').Apartment) => ipcRenderer.invoke(IpcChannel.NotionSave, apartment),
+  syncFavorites: () => ipcRenderer.invoke(IpcChannel.FavoritesSync),
+  loginIdealista: () => ipcRenderer.invoke(IpcChannel.IdealistaLogin),
   onStatusChanged: (listener: (status: AppStatus) => void) => {
     const handler = (_e: unknown, status: AppStatus) => listener(status);
     ipcRenderer.on(IpcEvent.StatusChanged, handler);
