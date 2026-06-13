@@ -8,6 +8,8 @@ const api: RendererApi = {
   setConfig: (config: AppConfig) => ipcRenderer.invoke(IpcChannel.SetConfig, config),
   getStatus: () => ipcRenderer.invoke(IpcChannel.GetStatus),
   scrape: (url: string) => ipcRenderer.invoke(IpcChannel.Scrape, url),
+  validateNotion: () => ipcRenderer.invoke(IpcChannel.NotionValidate),
+  saveToNotion: (apartment: import('../../src/types').Apartment) => ipcRenderer.invoke(IpcChannel.NotionSave, apartment),
   onStatusChanged: (listener: (status: AppStatus) => void) => {
     const handler = (_e: unknown, status: AppStatus) => listener(status);
     ipcRenderer.on(IpcEvent.StatusChanged, handler);

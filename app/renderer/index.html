@@ -9,10 +9,15 @@
     <p>Versión: <span id="version">…</span></p>
     <p>Configurado: <span id="configured">…</span></p>
     <label>Token de Notion:
-      <input id="token" type="text" placeholder="secret_…" />
+      <input id="token" type="text" placeholder="ntn_… o secret_…" />
+    </label>
+    <label>Database ID de Notion:
+      <input id="db" type="text" placeholder="id de la base de datos" />
     </label>
     <button id="save">Guardar</button>
+    <button id="connect">Conectar Notion</button>
     <p id="saved" hidden>Guardado ✓</p>
+    <p id="notion-status"></p>
     <hr />
     <label>Link de Idealista:
       <input id="url" type="text" placeholder="https://www.idealista.com/inmueble/…/" />
