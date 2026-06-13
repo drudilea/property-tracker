@@ -1,5 +1,6 @@
 import { app, ipcMain } from 'electron';
 import { IpcChannel } from '../shared/ipc-contract';
+import { scrapeListing } from './scraper-service';
 import type { AppStatus } from '../shared/ipc-contract';
 import { loadConfig, saveConfig } from './config';
 import type { AppConfig } from './config';
@@ -19,4 +20,6 @@ export function registerIpcHandlers(configPath: string): void {
       configured: Boolean(config.notionToken && config.notionDatabaseId),
     };
   });
+
+  ipcMain.handle(IpcChannel.Scrape, (_e, url: string) => scrapeListing(url));
 }
