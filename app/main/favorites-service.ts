@@ -1,24 +1,30 @@
 import { readFavoriteUrls, scrape, withPage } from '../../src/scraper';
-import { configureNotion, findByIdealistaId, saveApartment } from '../../src/notion';
-import { loadConfig } from './config';
 import { browserMutex } from './scraper-service';
+import { notionClientFromConfig } from './notion-session';
 import type { FavoritesSyncResult } from '../shared/ipc-contract';
 
 function extractId(url: string): string {
   return url.match(/\/inmueble\/(\d+)/)?.[1] ?? '';
 }
 
+const emptyError = (error: string): FavoritesSyncResult => ({
+  ok: false,
+  error,
+  found: 0,
+  created: 0,
+  duplicates: 0,
+  failed: 0,
+});
+
 /** Read favorites, skip ones already in Notion, scrape + save the rest.
  * Reuses a single tab for the whole batch (read favorites, then navigate to
  * each new listing) instead of opening/closing a tab per listing. */
-export async function syncFavorites(configPath: string): Promise<FavoritesSyncResult> {
-  const config = loadConfig(configPath);
-  const token = config.notionToken ?? '';
-  const dbId = config.notionDatabaseId ?? '';
-  if (!token || !dbId) {
-    return { ok: false, error: 'Notion no está configurado.', found: 0, created: 0, duplicates: 0, failed: 0 };
-  }
-  configureNotion(token, dbId);
+export async function syncFavorites(
+  configPath: string,
+): Promise<FavoritesSyncResult> {
+  const session = notionClientFromConfig(configPath);
+  if (!session.ok) return emptyError(session.error);
+  const notion = session.client;
 
   try {
     return await browserMutex.run(() =>
@@ -31,13 +37,13 @@ export async function syncFavorites(configPath: string): Promise<FavoritesSyncRe
         for (const url of urls) {
           const id = extractId(url);
           try {
-            const existing = id ? await findByIdealistaId(id) : null;
+            const existing = id ? await notion.findByIdealistaId(id) : null;
             if (existing) {
               duplicates++;
               continue;
             }
             const apartment = await scrape(url, page);
-            await saveApartment(apartment);
+            await notion.save(apartment);
             created++;
             console.log('[favorites] saved', id);
           } catch (err) {
@@ -50,13 +56,6 @@ export async function syncFavorites(configPath: string): Promise<FavoritesSyncRe
       }),
     );
   } catch (err) {
-    return {
-      ok: false,
-      error: err instanceof Error ? err.message : String(err),
-      found: 0,
-      created: 0,
-      duplicates: 0,
-      failed: 0,
-    };
+    return emptyError(err instanceof Error ? err.message : String(err));
   }
 }

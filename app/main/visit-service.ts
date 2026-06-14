@@ -1,12 +1,6 @@
-import {
-  configureNotion,
-  findByQuery,
-  getApartmentDetails,
-  updateStatus,
-  buildNotionUrl,
-} from '../../src/notion';
+import { buildNotionUrl } from '../../src/notion';
 import { buildCalendarUrl } from '../../src/calendar';
-import { loadConfig } from './config';
+import { notionClientFromConfig } from './notion-session';
 import type { CreateVisitResult } from '../shared/ipc-contract';
 
 /** Build a Google Calendar visit URL for a listing and mark it scheduled.
@@ -16,11 +10,9 @@ export async function createVisit(
   idealistaId: string,
   startISO: string,
 ): Promise<CreateVisitResult> {
-  const config = loadConfig(configPath);
-  if (!config.notionToken || !config.notionDatabaseId) {
-    return { ok: false, error: 'Notion no está configurado.' };
-  }
-  configureNotion(config.notionToken, config.notionDatabaseId);
+  const session = notionClientFromConfig(configPath);
+  if (!session.ok) return { ok: false, error: session.error };
+  const notion = session.client;
 
   const startDate = new Date(startISO);
   if (Number.isNaN(startDate.getTime())) {
@@ -28,11 +20,14 @@ export async function createVisit(
   }
 
   try {
-    const found = await findByQuery(idealistaId);
+    const found = await notion.findByQuery(idealistaId);
     if (!found) {
-      return { ok: false, error: `No encontré el piso "${idealistaId}" en Notion.` };
+      return {
+        ok: false,
+        error: `No encontré el piso "${idealistaId}" en Notion.`,
+      };
     }
-    const details = await getApartmentDetails(found.pageId);
+    const details = await notion.getDetails(found.pageId);
     if (!details) {
       return { ok: false, error: 'No pude leer los datos del piso.' };
     }
@@ -47,9 +42,12 @@ export async function createVisit(
       durationMinutes: 30,
     });
 
-    await updateStatus(found.pageId, 'visita_programada');
+    await notion.updateStatus(found.pageId, 'visita_programada');
     return { ok: true, url, title };
   } catch (err) {
-    return { ok: false, error: err instanceof Error ? err.message : String(err) };
+    return {
+      ok: false,
+      error: err instanceof Error ? err.message : String(err),
+    };
   }
 }
