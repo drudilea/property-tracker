@@ -1,25 +1,24 @@
 import { contextBridge, ipcRenderer } from 'electron';
-import { IpcChannel, IpcEvent } from '../shared/ipc-contract';
-import type { AppConfig } from '../main/config';
-import type { AppStatus, RendererApi } from '../shared/ipc-contract';
+import { IpcInvokeChannel, IpcEvent } from '../shared/ipc-contract';
+import type { AppStatus, IpcInvokeApi, RendererApi } from '../shared/ipc-contract';
+
+/** Build the invoke half of the bridge by wrapping each registered channel in
+ * an ipcRenderer.invoke call, so adding a method to the registry auto-generates
+ * its wrapper. */
+function buildInvokeApi(): IpcInvokeApi {
+  const entries = Object.entries(IpcInvokeChannel) as [
+    keyof IpcInvokeApi,
+    string,
+  ][];
+  const api = {} as Record<string, (...args: unknown[]) => Promise<unknown>>;
+  for (const [name, channel] of entries) {
+    api[name] = (...args: unknown[]) => ipcRenderer.invoke(channel, ...args);
+  }
+  return api as unknown as IpcInvokeApi;
+}
 
 const api: RendererApi = {
-  getConfig: () => ipcRenderer.invoke(IpcChannel.GetConfig),
-  setConfig: (config: AppConfig) =>
-    ipcRenderer.invoke(IpcChannel.SetConfig, config),
-  getStatus: () => ipcRenderer.invoke(IpcChannel.GetStatus),
-  scrape: (url: string) => ipcRenderer.invoke(IpcChannel.Scrape, url),
-  validateNotion: () => ipcRenderer.invoke(IpcChannel.NotionValidate),
-  saveToNotion: (apartment: import('../../src/types').Apartment) =>
-    ipcRenderer.invoke(IpcChannel.NotionSave, apartment),
-  syncFavorites: () => ipcRenderer.invoke(IpcChannel.FavoritesSync),
-  loginIdealista: () => ipcRenderer.invoke(IpcChannel.IdealistaLogin),
-  createVisit: (idealistaId: string, startISO: string) =>
-    ipcRenderer.invoke(IpcChannel.CreateVisit, idealistaId, startISO),
-  openExternal: (url: string) =>
-    ipcRenderer.invoke(IpcChannel.OpenExternal, url),
-  applyTelegram: () => ipcRenderer.invoke(IpcChannel.TelegramApply),
-  telegramRunning: () => ipcRenderer.invoke(IpcChannel.TelegramStatus),
+  ...buildInvokeApi(),
   onStatusChanged: (listener: (status: AppStatus) => void) => {
     const handler = (_e: unknown, status: AppStatus) => listener(status);
     ipcRenderer.on(IpcEvent.StatusChanged, handler);

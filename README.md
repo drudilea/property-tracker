@@ -66,9 +66,11 @@ on macOS). Nothing is committed or shared.
 
 ## Architecture (brief)
 
-- **Electron main** (Node) runs the business logic from `src/` (scraper, notion,
-  calendar) plus the services in `app/main/` (scrape, favorites, visits, telegram).
+- **Electron main** (Node) runs the business logic in `app/main/`: the browser
+  session and listing parser (scraping), `notion`/`calendar`, and the services
+  (scrape, favorites, visits, telegram). Shared types live in `app/shared/`.
 - **Renderer** is a minimal control panel; it talks to the main process only
   through a typed IPC bridge (`app/preload`, `app/shared/ipc-contract.ts`).
-- A **single shared Chrome session** (login / scrape / favorites) is serialized by
-  a mutex so the browser profile is never opened twice at once.
+- A **single shared Chrome session** (login / scrape / favorites) lives in
+  `BrowserSession`; its internal mutex serializes every access, so the browser
+  profile is never opened twice at once and no caller can bypass the lock.

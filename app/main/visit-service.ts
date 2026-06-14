@@ -1,7 +1,8 @@
-import { buildNotionUrl } from '../../src/notion';
-import { buildCalendarUrl } from '../../src/calendar';
+import { buildNotionUrl } from './notion';
+import { buildCalendarUrl } from './calendar';
 import { notionClientFromConfig } from './notion-session';
 import type { CreateVisitResult } from '../shared/ipc-contract';
+import { errorMessage } from './result';
 
 /** Build a Google Calendar visit URL for a listing and mark it scheduled.
  * The renderer shows the URL as a link; opening is left to the user. */
@@ -47,7 +48,7 @@ export async function createVisit(
   } catch (err) {
     return {
       ok: false,
-      error: err instanceof Error ? err.message : String(err),
+      error: errorMessage(err),
     };
   }
 }

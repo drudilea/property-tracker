@@ -1,5 +1,5 @@
 import { app, ipcMain, shell } from 'electron';
-import { IpcChannel } from '../shared/ipc-contract';
+import { IpcInvokeChannel } from '../shared/ipc-contract';
 import { scrapeListing } from './scraper-service';
 import type { AppStatus } from '../shared/ipc-contract';
 import { loadConfig, saveConfig } from './config';
@@ -9,17 +9,17 @@ import { syncFavorites } from './favorites-service';
 import { loginIdealista } from './idealista-service';
 import { createVisit } from './visit-service';
 import { startTelegramBot, isTelegramRunning } from './telegram-service';
-import type { Apartment } from '../../src/types';
+import type { Apartment } from '../shared/apartment';
 
 /** Register all ipcMain handlers. `configPath` is resolved once at startup. */
 export function registerIpcHandlers(configPath: string): void {
-  ipcMain.handle(IpcChannel.GetConfig, (): AppConfig => loadConfig(configPath));
+  ipcMain.handle(IpcInvokeChannel.getConfig, (): AppConfig => loadConfig(configPath));
 
-  ipcMain.handle(IpcChannel.SetConfig, (_e, config: AppConfig): void => {
+  ipcMain.handle(IpcInvokeChannel.setConfig, (_e, config: AppConfig): void => {
     saveConfig(configPath, config);
   });
 
-  ipcMain.handle(IpcChannel.GetStatus, (): AppStatus => {
+  ipcMain.handle(IpcInvokeChannel.getStatus, (): AppStatus => {
     const config = loadConfig(configPath);
     return {
       appVersion: app.getVersion(),
@@ -27,27 +27,27 @@ export function registerIpcHandlers(configPath: string): void {
     };
   });
 
-  ipcMain.handle(IpcChannel.Scrape, (_e, url: string) => scrapeListing(url));
+  ipcMain.handle(IpcInvokeChannel.scrape, (_e, url: string) => scrapeListing(url));
 
-  ipcMain.handle(IpcChannel.NotionValidate, () => validateNotion(configPath));
-  ipcMain.handle(IpcChannel.NotionSave, (_e, apartment: Apartment) =>
+  ipcMain.handle(IpcInvokeChannel.validateNotion, () => validateNotion(configPath));
+  ipcMain.handle(IpcInvokeChannel.saveToNotion, (_e, apartment: Apartment) =>
     saveToNotion(configPath, apartment),
   );
 
-  ipcMain.handle(IpcChannel.FavoritesSync, () => syncFavorites(configPath));
+  ipcMain.handle(IpcInvokeChannel.syncFavorites, () => syncFavorites(configPath));
 
-  ipcMain.handle(IpcChannel.IdealistaLogin, () => loginIdealista());
+  ipcMain.handle(IpcInvokeChannel.loginIdealista, () => loginIdealista());
 
   ipcMain.handle(
-    IpcChannel.CreateVisit,
+    IpcInvokeChannel.createVisit,
     (_e, idealistaId: string, startISO: string) =>
       createVisit(configPath, idealistaId, startISO),
   );
 
-  ipcMain.handle(IpcChannel.OpenExternal, (_e, url: string) =>
+  ipcMain.handle(IpcInvokeChannel.openExternal, (_e, url: string) =>
     shell.openExternal(url),
   );
 
-  ipcMain.handle(IpcChannel.TelegramApply, () => startTelegramBot(configPath));
-  ipcMain.handle(IpcChannel.TelegramStatus, () => isTelegramRunning());
+  ipcMain.handle(IpcInvokeChannel.applyTelegram, () => startTelegramBot(configPath));
+  ipcMain.handle(IpcInvokeChannel.telegramRunning, () => isTelegramRunning());
 }

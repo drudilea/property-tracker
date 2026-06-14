@@ -4,7 +4,7 @@ import { join } from 'node:path';
 import { registerIpcHandlers } from './ipc';
 import { createTray } from './tray';
 import { installContextMenu } from './context-menu';
-import { closeBrowser, configureScraperPaths } from '../../src/scraper';
+import { configureSession, closeSessionIfConfigured } from './session';
 import { loadConfig } from './config';
 import { startTelegramBot, stopTelegramBot } from './telegram-service';
 import appIconPath from './assets/icon.png?asset';
@@ -49,9 +49,9 @@ function createWindow(): BrowserWindow {
 
 app.whenReady().then(() => {
   const userData = app.getPath('userData');
-  configureScraperPaths({
+  configureSession({
     dataDir: join(userData, 'data'),
-    browserProfileDir: join(userData, '.browser-profile'),
+    profileDir: join(userData, '.browser-profile'),
   });
 
   // In dev the dock shows the default Electron icon; set ours. (Packaged builds
@@ -76,6 +76,6 @@ app.on('window-all-closed', () => {
 
 app.on('before-quit', () => {
   isQuitting = true;
-  void closeBrowser();
+  void closeSessionIfConfigured();
   void stopTelegramBot();
 });

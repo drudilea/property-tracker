@@ -1,8 +1,9 @@
-import { validateToken, buildNotionUrl } from '../../src/notion';
-import type { Apartment } from '../../src/types';
+import { validateToken, buildNotionUrl } from './notion';
+import type { Apartment } from '../shared/apartment';
 import type { NotionSaveResult } from '../shared/ipc-contract';
 import { loadConfig } from './config';
 import { notionClientFromConfig } from './notion-session';
+import { errorMessage } from './result';
 
 /** Validate the token currently stored in config (via /users/me). */
 export async function validateNotion(
@@ -31,7 +32,7 @@ export async function saveToNotion(
   } catch (err) {
     return {
       ok: false,
-      error: err instanceof Error ? err.message : String(err),
+      error: errorMessage(err),
     };
   }
 }

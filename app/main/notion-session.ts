@@ -1,4 +1,4 @@
-import { createNotionClient, type NotionClient } from '../../src/notion';
+import { createNotionClient, type NotionClient } from './notion';
 import { loadConfig } from './config';
 
 let cached: { token: string; dbId: string; client: NotionClient } | null = null;

@@ -1,19 +1,13 @@
-import { initializeBrowserProfile } from '../../src/scraper';
-import { browserMutex } from './scraper-service';
+import { getSession } from './session';
+import { errorMessage } from './result';
 
 /** Open Chrome with the dedicated profile so the user can log in to Idealista.
- * Blocks (no timeout) until the user closes the Chrome window. */
-export async function loginIdealista(): Promise<{
-  ok: boolean;
-  error?: string;
-}> {
+ * Returns once the page is ready, leaving the window open for reuse. */
+export async function loginIdealista(): Promise<{ ok: boolean; error?: string }> {
   try {
-    await browserMutex.run(() => initializeBrowserProfile());
+    await getSession().openForLogin();
     return { ok: true };
   } catch (err) {
-    return {
-      ok: false,
-      error: err instanceof Error ? err.message : String(err),
-    };
+    return { ok: false, error: errorMessage(err) };
   }
 }

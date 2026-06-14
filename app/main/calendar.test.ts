@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { buildCalendarUrl } from '../../src/calendar';
+import { buildCalendarUrl } from './calendar';
 
 describe('buildCalendarUrl', () => {
   it('builds a Google Calendar template URL with formatted dates', () => {

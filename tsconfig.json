@@ -10,5 +10,5 @@
     "types": ["node", "electron-vite/node"],
     "noEmit": true
   },
-  "include": ["app", "src"]
+  "include": ["app"]
 }

@@ -1,4 +1,5 @@
-import type { Apartment, ApartmentStatus } from './types.js';
+import type { Apartment, ApartmentStatus } from '../shared/apartment';
+import { errorMessage } from './result';
 
 const NOTION_VERSION = '2022-06-28';
 const NOTION_API = 'https://api.notion.com/v1';
@@ -129,7 +130,7 @@ export async function validateToken(
   } catch (err) {
     return {
       ok: false,
-      error: err instanceof Error ? err.message : String(err),
+      error: errorMessage(err),
     };
   }
 }
