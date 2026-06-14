@@ -29,7 +29,11 @@ describe('config', () => {
   });
 
   it('round-trips a saved config', () => {
-    const next = { ...DEFAULT_CONFIG, notionToken: 'secret_abc', launchOnStartup: true };
+    const next = {
+      ...DEFAULT_CONFIG,
+      notionToken: 'secret_abc',
+      launchOnStartup: true,
+    };
     saveConfig(file, next);
     expect(loadConfig(file)).toEqual(next);
   });

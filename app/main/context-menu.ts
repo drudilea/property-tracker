@@ -9,7 +9,10 @@ export function installContextMenu(win: BrowserWindow): void {
 
     if (params.linkURL) {
       items.push(
-        { label: 'Copiar enlace', click: () => clipboard.writeText(params.linkURL) },
+        {
+          label: 'Copiar enlace',
+          click: () => clipboard.writeText(params.linkURL),
+        },
         { type: 'separator' },
       );
     }

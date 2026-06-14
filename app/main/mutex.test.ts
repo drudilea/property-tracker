@@ -21,7 +21,11 @@ describe('mutex', () => {
 
   it('releases the lock even if a task throws', async () => {
     const mutex = createMutex();
-    await expect(mutex.run(async () => { throw new Error('boom'); })).rejects.toThrow('boom');
+    await expect(
+      mutex.run(async () => {
+        throw new Error('boom');
+      }),
+    ).rejects.toThrow('boom');
     await expect(mutex.run(async () => 'ok')).resolves.toBe('ok');
   });
 });

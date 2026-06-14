@@ -10,7 +10,7 @@ export interface Apartment {
   floor: string | null;
   contactName: string;
   contactPhone: string;
-  contactType: "particular" | "inmobiliaria" | null;
+  contactType: 'particular' | 'inmobiliaria' | null;
   photoUrls: string[];
   // Apartment features
   elevator: boolean | null;
@@ -23,22 +23,22 @@ export interface Apartment {
 }
 
 export type ApartmentStatus =
-  | "nuevo"
-  | "contactado"
-  | "sin_respuesta"
-  | "visita_programada"
-  | "visitado"
-  | "descartado"
-  | "interesado";
+  | 'nuevo'
+  | 'contactado'
+  | 'sin_respuesta'
+  | 'visita_programada'
+  | 'visitado'
+  | 'descartado'
+  | 'interesado';
 
 export const VALID_STATUSES: ApartmentStatus[] = [
-  "nuevo",
-  "contactado",
-  "sin_respuesta",
-  "visita_programada",
-  "visitado",
-  "descartado",
-  "interesado",
+  'nuevo',
+  'contactado',
+  'sin_respuesta',
+  'visita_programada',
+  'visitado',
+  'descartado',
+  'interesado',
 ];
 
 export function isValidStatus(s: string): s is ApartmentStatus {

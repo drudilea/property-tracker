@@ -10,29 +10,30 @@
     "preview": "electron-vite preview",
     "test": "vitest run",
     "test:watch": "vitest",
-    "pack": "electron-vite build && electron-builder",
-    "scrape": "tsx src/index.ts",
-    "build": "tsc",
-    "init:browser": "tsx src/init-browser.ts",
-    "init:browser:dist": "node dist/init-browser.js",
-    "scrape:dist": "node dist/index.js",
-    "package:portable": "npm run build && node scripts/build-portable.mjs"
+    "typecheck": "tsc --noEmit",
+    "lint": "eslint .",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "pack": "electron-vite build && electron-builder"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "dotenv": "^17.4.1",
     "grammy": "^1.42.0",
     "playwright": "^1.59.1"
   },
   "devDependencies": {
+    "@eslint/js": "^9.18.0",
     "@types/node": "^25.6.0",
     "electron": "^42.4.0",
     "electron-builder": "^26.15.3",
     "electron-vite": "^5.0.0",
-    "tsx": "^4.21.0",
+    "eslint": "^9.18.0",
+    "eslint-config-prettier": "^9.1.0",
+    "prettier": "^3.4.2",
     "typescript": "^6.0.2",
+    "typescript-eslint": "^8.20.0",
     "vitest": "^4.1.8"
   }
 }

@@ -58,7 +58,10 @@ export interface RendererApi {
   saveToNotion(apartment: Apartment): Promise<NotionSaveResult>;
   syncFavorites(): Promise<FavoritesSyncResult>;
   loginIdealista(): Promise<{ ok: boolean; error?: string }>;
-  createVisit(idealistaId: string, startISO: string): Promise<CreateVisitResult>;
+  createVisit(
+    idealistaId: string,
+    startISO: string,
+  ): Promise<CreateVisitResult>;
   openExternal(url: string): Promise<void>;
   applyTelegram(): Promise<{ ok: boolean; error?: string }>;
   telegramRunning(): Promise<boolean>;

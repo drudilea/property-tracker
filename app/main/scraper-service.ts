@@ -14,6 +14,9 @@ export async function scrapeListing(url: string): Promise<ScrapeResult> {
     return { ok: true, apartment };
   } catch (err) {
     console.error('[scrape] failed', err);
-    return { ok: false, error: err instanceof Error ? err.message : String(err) };
+    return {
+      ok: false,
+      error: err instanceof Error ? err.message : String(err),
+    };
   }
 }

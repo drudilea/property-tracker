@@ -308,14 +308,22 @@ export async function readFavoriteUrls(existingPage?: Page): Promise<string[]> {
   const context = existingPage ? null : await getContext();
   const page = existingPage ?? (await context!.newPage());
   try {
-    await page.goto(FAVORITES_URL, { waitUntil: 'domcontentloaded', timeout: 30000 });
+    await page.goto(FAVORITES_URL, {
+      waitUntil: 'domcontentloaded',
+      timeout: 30000,
+    });
     await acceptCookieBanner(page);
-    await page.waitForLoadState('networkidle', { timeout: 10000 }).catch(() => {});
+    await page
+      .waitForLoadState('networkidle', { timeout: 10000 })
+      .catch(() => {});
 
     const hasFavorites = await page
       .locator('a[href*="/inmueble/"]')
       .count()
-      .then((c) => c > 0, () => false);
+      .then(
+        (c) => c > 0,
+        () => false,
+      );
 
     if (!hasFavorites) {
       const blockingReason = await getBlockingReason(page);
@@ -363,7 +371,10 @@ export async function initializeBrowserProfile(options?: {
   }
 }
 
-export async function scrape(url: string, existingPage?: Page): Promise<Apartment> {
+export async function scrape(
+  url: string,
+  existingPage?: Page,
+): Promise<Apartment> {
   const idealistaId = extractIdealistaId(url);
 
   // Reuse the shared persistent context (real Chrome) to avoid anti-bot

@@ -1,7 +1,9 @@
 async function render(): Promise<void> {
   const status = await window.api.getStatus();
   document.querySelector('#version')!.textContent = status.appVersion;
-  document.querySelector('#configured')!.textContent = status.configured ? 'sí' : 'no';
+  document.querySelector('#configured')!.textContent = status.configured
+    ? 'sí'
+    : 'no';
 
   const config = await window.api.getConfig();
   const tokenInput = document.querySelector<HTMLInputElement>('#token')!;
@@ -19,16 +21,21 @@ async function render(): Promise<void> {
     saved.hidden = false;
   });
 
-  const notionStatus = document.querySelector<HTMLParagraphElement>('#notion-status')!;
+  const notionStatus =
+    document.querySelector<HTMLParagraphElement>('#notion-status')!;
   document.querySelector('#connect')!.addEventListener('click', async () => {
     notionStatus.textContent = 'Validando token…';
     const result = await window.api.validateNotion();
-    notionStatus.textContent = result.ok ? '✓ Notion conectado' : `✗ ${result.error}`;
+    notionStatus.textContent = result.ok
+      ? '✓ Notion conectado'
+      : `✗ ${result.error}`;
   });
 
   const urlInput = document.querySelector<HTMLInputElement>('#url')!;
-  const scrapeStatus = document.querySelector<HTMLParagraphElement>('#scrape-status')!;
-  const scrapeResult = document.querySelector<HTMLPreElement>('#scrape-result')!;
+  const scrapeStatus =
+    document.querySelector<HTMLParagraphElement>('#scrape-status')!;
+  const scrapeResult =
+    document.querySelector<HTMLPreElement>('#scrape-result')!;
 
   document.querySelector('#scrape')!.addEventListener('click', async () => {
     const url = urlInput.value.trim();
@@ -53,16 +60,20 @@ async function render(): Promise<void> {
     }
   });
 
-  const loginStatus = document.querySelector<HTMLParagraphElement>('#login-status')!;
-  document.querySelector('#login-idealista')!.addEventListener('click', async () => {
-    loginStatus.textContent = 'Abriendo Chrome…';
-    const r = await window.api.loginIdealista();
-    loginStatus.textContent = r.ok
-      ? '✓ Chrome abierto. Iniciá sesión en Idealista ahí (no hace falta cerrarlo) y después tocá Sincronizar.'
-      : `✗ ${r.error}`;
-  });
+  const loginStatus =
+    document.querySelector<HTMLParagraphElement>('#login-status')!;
+  document
+    .querySelector('#login-idealista')!
+    .addEventListener('click', async () => {
+      loginStatus.textContent = 'Abriendo Chrome…';
+      const r = await window.api.loginIdealista();
+      loginStatus.textContent = r.ok
+        ? '✓ Chrome abierto. Iniciá sesión en Idealista ahí (no hace falta cerrarlo) y después tocá Sincronizar.'
+        : `✗ ${r.error}`;
+    });
 
-  const favStatus = document.querySelector<HTMLParagraphElement>('#fav-status')!;
+  const favStatus =
+    document.querySelector<HTMLParagraphElement>('#fav-status')!;
   document.querySelector('#sync-fav')!.addEventListener('click', async () => {
     favStatus.textContent = 'Sincronizando favoritos… (se abre Chrome)';
     const r = await window.api.syncFavorites();
@@ -73,30 +84,33 @@ async function render(): Promise<void> {
 
   const visitId = document.querySelector<HTMLInputElement>('#visit-id')!;
   const visitWhen = document.querySelector<HTMLInputElement>('#visit-when')!;
-  const visitStatus = document.querySelector<HTMLParagraphElement>('#visit-status')!;
-  document.querySelector('#create-visit')!.addEventListener('click', async () => {
-    const id = visitId.value.trim();
-    const when = visitWhen.value;
-    if (!id || !when) {
-      visitStatus.textContent = 'Completá el ID y la fecha/hora.';
-      return;
-    }
-    visitStatus.textContent = 'Creando visita…';
-    const r = await window.api.createVisit(id, when);
-    if (!r.ok) {
-      visitStatus.textContent = `✗ ${r.error}`;
-      return;
-    }
-    visitStatus.textContent = `✓ ${r.title} (visita_programada) · `;
-    const link = document.createElement('a');
-    link.textContent = 'Abrir en Google Calendar';
-    link.href = r.url;
-    link.addEventListener('click', (e) => {
-      e.preventDefault();
-      window.api.openExternal(r.url);
+  const visitStatus =
+    document.querySelector<HTMLParagraphElement>('#visit-status')!;
+  document
+    .querySelector('#create-visit')!
+    .addEventListener('click', async () => {
+      const id = visitId.value.trim();
+      const when = visitWhen.value;
+      if (!id || !when) {
+        visitStatus.textContent = 'Completá el ID y la fecha/hora.';
+        return;
+      }
+      visitStatus.textContent = 'Creando visita…';
+      const r = await window.api.createVisit(id, when);
+      if (!r.ok) {
+        visitStatus.textContent = `✗ ${r.error}`;
+        return;
+      }
+      visitStatus.textContent = `✓ ${r.title} (visita_programada) · `;
+      const link = document.createElement('a');
+      link.textContent = 'Abrir en Google Calendar';
+      link.href = r.url;
+      link.addEventListener('click', (e) => {
+        e.preventDefault();
+        window.api.openExternal(r.url);
+      });
+      visitStatus.appendChild(link);
     });
-    visitStatus.appendChild(link);
-  });
 
   const tgToken = document.querySelector<HTMLInputElement>('#tg-token')!;
   const tgStatus = document.querySelector<HTMLParagraphElement>('#tg-status')!;
@@ -105,7 +119,10 @@ async function render(): Promise<void> {
     tgStatus.textContent = on ? '✓ Bot activo' : 'Bot apagado';
   });
   document.querySelector('#tg-apply')!.addEventListener('click', async () => {
-    await window.api.setConfig({ ...config, telegramBotToken: tgToken.value || null });
+    await window.api.setConfig({
+      ...config,
+      telegramBotToken: tgToken.value || null,
+    });
     tgStatus.textContent = 'Aplicando…';
     const r = await window.api.applyTelegram();
     tgStatus.textContent = r.ok ? '✓ Bot activo' : `✗ ${r.error}`;

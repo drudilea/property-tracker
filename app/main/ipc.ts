@@ -30,15 +30,23 @@ export function registerIpcHandlers(configPath: string): void {
   ipcMain.handle(IpcChannel.Scrape, (_e, url: string) => scrapeListing(url));
 
   ipcMain.handle(IpcChannel.NotionValidate, () => validateNotion(configPath));
-  ipcMain.handle(IpcChannel.NotionSave, (_e, apartment: Apartment) => saveToNotion(configPath, apartment));
+  ipcMain.handle(IpcChannel.NotionSave, (_e, apartment: Apartment) =>
+    saveToNotion(configPath, apartment),
+  );
 
   ipcMain.handle(IpcChannel.FavoritesSync, () => syncFavorites(configPath));
 
   ipcMain.handle(IpcChannel.IdealistaLogin, () => loginIdealista());
 
-  ipcMain.handle(IpcChannel.CreateVisit, (_e, idealistaId: string, startISO: string) => createVisit(configPath, idealistaId, startISO));
+  ipcMain.handle(
+    IpcChannel.CreateVisit,
+    (_e, idealistaId: string, startISO: string) =>
+      createVisit(configPath, idealistaId, startISO),
+  );
 
-  ipcMain.handle(IpcChannel.OpenExternal, (_e, url: string) => shell.openExternal(url));
+  ipcMain.handle(IpcChannel.OpenExternal, (_e, url: string) =>
+    shell.openExternal(url),
+  );
 
   ipcMain.handle(IpcChannel.TelegramApply, () => startTelegramBot(configPath));
   ipcMain.handle(IpcChannel.TelegramStatus, () => isTelegramRunning());

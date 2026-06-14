@@ -5,15 +5,19 @@ import type { AppStatus, RendererApi } from '../shared/ipc-contract';
 
 const api: RendererApi = {
   getConfig: () => ipcRenderer.invoke(IpcChannel.GetConfig),
-  setConfig: (config: AppConfig) => ipcRenderer.invoke(IpcChannel.SetConfig, config),
+  setConfig: (config: AppConfig) =>
+    ipcRenderer.invoke(IpcChannel.SetConfig, config),
   getStatus: () => ipcRenderer.invoke(IpcChannel.GetStatus),
   scrape: (url: string) => ipcRenderer.invoke(IpcChannel.Scrape, url),
   validateNotion: () => ipcRenderer.invoke(IpcChannel.NotionValidate),
-  saveToNotion: (apartment: import('../../src/types').Apartment) => ipcRenderer.invoke(IpcChannel.NotionSave, apartment),
+  saveToNotion: (apartment: import('../../src/types').Apartment) =>
+    ipcRenderer.invoke(IpcChannel.NotionSave, apartment),
   syncFavorites: () => ipcRenderer.invoke(IpcChannel.FavoritesSync),
   loginIdealista: () => ipcRenderer.invoke(IpcChannel.IdealistaLogin),
-  createVisit: (idealistaId: string, startISO: string) => ipcRenderer.invoke(IpcChannel.CreateVisit, idealistaId, startISO),
-  openExternal: (url: string) => ipcRenderer.invoke(IpcChannel.OpenExternal, url),
+  createVisit: (idealistaId: string, startISO: string) =>
+    ipcRenderer.invoke(IpcChannel.CreateVisit, idealistaId, startISO),
+  openExternal: (url: string) =>
+    ipcRenderer.invoke(IpcChannel.OpenExternal, url),
   applyTelegram: () => ipcRenderer.invoke(IpcChannel.TelegramApply),
   telegramRunning: () => ipcRenderer.invoke(IpcChannel.TelegramStatus),
   onStatusChanged: (listener: (status: AppStatus) => void) => {

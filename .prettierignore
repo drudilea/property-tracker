@@ -1,0 +1,8 @@
+out/
+dist/
+release/
+node_modules/
+portable/
+package-lock.json
+app/main/assets/
+docs/

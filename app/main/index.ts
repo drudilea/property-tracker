@@ -12,7 +12,8 @@ import appIconPath from './assets/icon.png?asset';
 const CONFIG_PATH = join(app.getPath('userData'), 'config.json');
 
 let mainWindow: BrowserWindow | null = null;
-let tray: Tray | null = null;
+// Kept only to hold the Tray reference so it is not garbage-collected.
+let _tray: Tray | null = null;
 let isQuitting = false;
 
 function createWindow(): BrowserWindow {
@@ -59,9 +60,10 @@ app.whenReady().then(() => {
     app.dock.setIcon(appIconPath);
   }
   registerIpcHandlers(CONFIG_PATH);
-  if (loadConfig(CONFIG_PATH).telegramBotToken) void startTelegramBot(CONFIG_PATH);
+  if (loadConfig(CONFIG_PATH).telegramBotToken)
+    void startTelegramBot(CONFIG_PATH);
   createWindow();
-  tray = createTray(() => mainWindow);
+  _tray = createTray(() => mainWindow);
 
   app.on('activate', () => {
     if (BrowserWindow.getAllWindows().length === 0) createWindow();

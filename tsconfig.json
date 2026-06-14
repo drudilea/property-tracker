@@ -8,7 +8,7 @@
     "skipLibCheck": true,
     "resolveJsonModule": true,
     "types": ["node", "electron-vite/node"],
-    "outDir": "dist"
+    "noEmit": true
   },
   "include": ["app", "src"]
 }

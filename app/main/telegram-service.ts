@@ -25,7 +25,9 @@ function compactToISO(ddmm: string, hhmm: string): string | null {
 }
 
 /** Start (or restart) the bot from the configured token. */
-export async function startTelegramBot(configPath: string): Promise<{ ok: boolean; error?: string }> {
+export async function startTelegramBot(
+  configPath: string,
+): Promise<{ ok: boolean; error?: string }> {
   await stopTelegramBot();
   const token = loadConfig(configPath).telegramBotToken;
   if (!token) return { ok: false, error: 'Falta el token de Telegram.' };
@@ -56,9 +58,12 @@ export async function startTelegramBot(configPath: string): Promise<{ ok: boolea
     const args = ctx.match?.trim().split(/\s+/) ?? [];
     if (args.length < 3) return ctx.reply('Uso: /visita <id> <DDMM> <HHMM>');
     const iso = compactToISO(args[1], args[2]);
-    if (!iso) return ctx.reply('Fecha inválida. Formato: DDMM HHMM (ej. 1506 1800).');
+    if (!iso)
+      return ctx.reply('Fecha inválida. Formato: DDMM HHMM (ej. 1506 1800).');
     const r = await createVisit(configPath, args[0], iso);
-    return ctx.reply(r.ok ? `Visita programada: ${r.title}\n${r.url}` : `Error: ${r.error}`);
+    return ctx.reply(
+      r.ok ? `Visita programada: ${r.title}\n${r.url}` : `Error: ${r.error}`,
+    );
   });
 
   b.on('message:text', async (ctx) => {
@@ -71,7 +76,8 @@ export async function startTelegramBot(configPath: string): Promise<{ ok: boolea
     const result = await scrapeListing(match[0]);
     if (!result.ok) return ctx.reply(`Error: ${result.error}`);
     const save = await saveToNotion(configPath, result.apartment);
-    if (!save.ok) return ctx.reply(`Scrapeado, pero no se guardó: ${save.error}`);
+    if (!save.ok)
+      return ctx.reply(`Scrapeado, pero no se guardó: ${save.error}`);
     return ctx.reply(
       save.status === 'duplicate'
         ? `Ya existía en Notion: ${save.url}`

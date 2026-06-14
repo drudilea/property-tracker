@@ -19,8 +19,11 @@ describe('buildCalendarUrl', () => {
 
   it('adds a guest when provided', () => {
     const url = buildCalendarUrl({
-      title: 't', location: 'l', description: 'd',
-      startDate: new Date(2026, 0, 1, 9, 0), durationMinutes: 30,
+      title: 't',
+      location: 'l',
+      description: 'd',
+      startDate: new Date(2026, 0, 1, 9, 0),
+      durationMinutes: 30,
       guestEmail: 'x@y.com',
     });
     expect(url).toContain('add=x%40y.com');
