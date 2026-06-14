@@ -1,5 +1,5 @@
-appId: com.idealista.tracker
-productName: Idealista Tracker
+appId: com.propertytracker.app
+productName: Property Tracker
 directories:
   output: release
 files:

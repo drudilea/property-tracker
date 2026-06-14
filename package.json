@@ -1,7 +1,7 @@
 {
-  "name": "idealista",
+  "name": "property-tracker",
   "version": "1.0.0",
-  "description": "Idealista apartment tracker with Notion integration",
+  "description": "Local desktop app to track apartment listings in your own Notion database (works with Idealista)",
   "type": "module",
   "main": "out/main/index.js",
   "scripts": {

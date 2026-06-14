@@ -8,7 +8,7 @@ export function createTray(getWindow: () => BrowserWindow | null): Tray {
     .createFromPath(trayIconPath)
     .resize({ width: 18, height: 18 });
   const tray = new Tray(icon);
-  tray.setToolTip('Idealista Tracker');
+  tray.setToolTip('Property Tracker');
 
   const menu = Menu.buildFromTemplate([
     {

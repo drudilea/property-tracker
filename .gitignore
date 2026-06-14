@@ -11,3 +11,7 @@ portable/
 out/
 release/
 docs/superpowers/
+# Personal project brief and agent handoff notes — not for the public repo
+context.md
+CONTEXT.md
+HANDOFF.md

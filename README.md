@@ -1,9 +1,15 @@
-# Idealista Tracker
+# Property Tracker
 
 A local, cross-platform **Electron desktop app** for an apartment search: it
 captures Idealista listings, scrapes their details with a real Chrome, and saves
 them to **your own Notion database**. 100% local — your data lives in your Notion
 and on your machine, no shared backend.
+
+> **Disclaimer:** Property Tracker is an independent personal project and is **not
+> affiliated with, endorsed by, or sponsored by Idealista S.A.** "Idealista" is a
+> trademark of its respective owner and is referenced here only to describe the
+> listings the tool works with. Use it for your own personal listings and respect
+> Idealista's Terms of Service.
 
 ## What it does
 
@@ -49,7 +55,7 @@ Windows SmartScreen "Run anyway"). Building for both platforms is done via CI
 3. **Capture** — paste a link, _Sincronizar favoritos_, or enable Telegram.
 
 The token, chosen database, and the dedicated browser profile are stored under
-the OS user-data directory (e.g. `~/Library/Application Support/Idealista Tracker/`
+the OS user-data directory (e.g. `~/Library/Application Support/Property Tracker/`
 on macOS). Nothing is committed or shared.
 
 ## Scripts
