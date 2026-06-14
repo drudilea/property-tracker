@@ -1,0 +1,51 @@
+name: Build apps
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  build:
+    name: Build ${{ matrix.label }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: macos-latest
+            label: macOS
+            artifact: property-tracker-macos
+          - os: windows-latest
+            label: Windows
+            artifact: property-tracker-windows
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      # The packaged app drives the user's installed Chrome at runtime, so we
+      # do NOT download Playwright's bundled browsers here — only the npm
+      # package is needed (electron-builder unpacks it via asarUnpack).
+      - name: Build and package
+        run: npm run pack
+        env:
+          # No Apple Developer certs in CI: skip code signing so the unsigned
+          # build succeeds. The macOS app opens via Gatekeeper "Open Anyway".
+          CSC_IDENTITY_AUTO_DISCOVERY: false
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.artifact }}
+          path: release/**
+          if-no-files-found: error
