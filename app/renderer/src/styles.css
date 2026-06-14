@@ -1,0 +1,400 @@
+/* ── Tokens: light (default) ── */
+:root {
+  --bg: #f5f6f8;
+  --surface: #ffffff;
+  --surface-2: #f0f1f4;
+  --text: #15181d;
+  --muted: #6b7280;
+  --border: #e4e6ea;
+  --navy: #1b2a4a;
+  --accent: #1f9d57;
+  --accent-strong: #167a43;
+  --danger: #c0392b;
+  --radius: 12px;
+  --shadow: 0 1px 3px rgba(20, 30, 50, 0.08), 0 4px 16px rgba(20, 30, 50, 0.06);
+  --focus-ring: 0 0 0 3px rgba(31, 157, 87, 0.25);
+  --transition: 160ms ease;
+}
+
+/* ── Tokens: dark (bold navy) ── */
+[data-theme='dark'] {
+  --bg: #0d1526;
+  --surface: #16213c;
+  --surface-2: #1d2c4d;
+  --text: #eaf0fb;
+  --muted: #93a1bd;
+  --border: #243456;
+  --navy: #0a1224;
+  --accent: #28c46a;
+  --accent-strong: #1f9d57;
+  --danger: #ff6b5e;
+  --radius: 12px;
+  --shadow: 0 1px 3px rgba(0, 0, 0, 0.4), 0 8px 28px rgba(0, 0, 0, 0.35),
+    0 0 0 1px rgba(40, 196, 106, 0.04);
+  --focus-ring: 0 0 0 3px rgba(40, 196, 106, 0.3);
+}
+
+/* ── Reset ── */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  height: 100%;
+}
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica,
+    Arial, sans-serif;
+  font-size: 14px;
+  line-height: 1.5;
+  transition: background var(--transition), color var(--transition);
+  -webkit-font-smoothing: antialiased;
+}
+
+#root {
+  height: 100%;
+}
+
+/* ── Card ── */
+.card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 20px;
+  box-shadow: var(--shadow);
+  transition: box-shadow var(--transition), background var(--transition),
+    border-color var(--transition);
+}
+
+.card h2 {
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  color: var(--muted);
+  margin: 0 0 16px;
+}
+
+/* ── Field (label + input wrapper) ── */
+.field {
+  margin-bottom: 14px;
+}
+
+.field label {
+  display: block;
+  font-weight: 500;
+  font-size: 13px;
+  color: var(--text);
+}
+
+.field input {
+  display: block;
+  width: 100%;
+  margin-top: 8px;
+  padding: 8px 11px;
+  border: 1.5px solid var(--border);
+  border-radius: 8px;
+  font-size: 14px;
+  background: var(--surface-2);
+  color: var(--text);
+  transition: border-color var(--transition), box-shadow var(--transition),
+    background var(--transition);
+  outline: none;
+}
+
+.field input::placeholder {
+  color: var(--muted);
+}
+
+.field input:focus {
+  border-color: var(--accent);
+  box-shadow: var(--focus-ring);
+  background: var(--surface);
+}
+
+/* ── Buttons ── */
+.btn,
+.btn-secondary {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 16px;
+  border: 0;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background var(--transition), box-shadow var(--transition),
+    opacity var(--transition);
+  outline: none;
+  white-space: nowrap;
+}
+
+.btn {
+  background: var(--accent);
+  color: #fff;
+}
+
+.btn:hover:not(:disabled) {
+  background: var(--accent-strong);
+  box-shadow: 0 2px 8px rgba(31, 157, 87, 0.35);
+}
+
+.btn:focus-visible {
+  box-shadow: var(--focus-ring);
+}
+
+.btn-secondary {
+  background: var(--surface-2);
+  color: var(--text);
+  border: 1.5px solid var(--border);
+}
+
+.btn-secondary:hover:not(:disabled) {
+  background: var(--border);
+}
+
+.btn-secondary:focus-visible {
+  box-shadow: var(--focus-ring);
+}
+
+.btn:disabled,
+.btn-secondary:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+/* ── Button row (siblings with gap) ── */
+.btn-row {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-top: 4px;
+}
+
+/* ── Spinner ── */
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.spinner {
+  width: 14px;
+  height: 14px;
+  border: 2px solid rgba(255, 255, 255, 0.4);
+  border-top-color: #fff;
+  border-radius: 50%;
+  animation: spin 0.6s linear infinite;
+  flex-shrink: 0;
+}
+
+.btn-secondary .spinner {
+  border-color: rgba(0, 0, 0, 0.15);
+  border-top-color: var(--muted);
+}
+
+[data-theme='dark'] .btn-secondary .spinner {
+  border-color: rgba(255, 255, 255, 0.15);
+  border-top-color: var(--muted);
+}
+
+/* ── Status line ── */
+.status {
+  margin: 10px 0 0;
+  font-size: 13px;
+  min-height: 1.4em;
+}
+
+.status.ok {
+  color: var(--accent);
+}
+
+.status.err {
+  color: var(--danger);
+}
+
+.status.loading {
+  color: var(--muted);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.status.loading .spinner {
+  border-color: rgba(107, 114, 128, 0.3);
+  border-top-color: var(--muted);
+}
+
+/* ── Header ── */
+.header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 14px 20px;
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.06);
+  transition: background var(--transition), border-color var(--transition);
+  -webkit-app-region: drag;
+}
+
+.header-title {
+  font-weight: 700;
+  font-size: 15px;
+  color: var(--navy);
+  flex: 1;
+  -webkit-app-region: drag;
+}
+
+[data-theme='dark'] .header-title {
+  color: var(--text);
+}
+
+.header-pill {
+  font-size: 11px;
+  font-weight: 600;
+  padding: 2px 8px;
+  border-radius: 20px;
+  background: var(--surface-2);
+  color: var(--muted);
+  border: 1px solid var(--border);
+}
+
+.header-pill.configured {
+  background: rgba(31, 157, 87, 0.1);
+  color: var(--accent);
+  border-color: rgba(31, 157, 87, 0.25);
+}
+
+[data-theme='dark'] .header-pill.configured {
+  background: rgba(40, 196, 106, 0.12);
+  color: var(--accent);
+  border-color: rgba(40, 196, 106, 0.25);
+}
+
+.header-action {
+  -webkit-app-region: no-drag;
+  background: none;
+  border: 0;
+  cursor: pointer;
+  padding: 5px;
+  border-radius: 6px;
+  color: var(--muted);
+  font-size: 16px;
+  line-height: 1;
+  transition: background var(--transition), color var(--transition);
+}
+
+.header-action:hover {
+  background: var(--surface-2);
+  color: var(--text);
+}
+
+/* ── Grid layout (cards) ── */
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 16px;
+  padding: 20px;
+}
+
+/* ── Main content area ── */
+.main-content {
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  max-width: 800px;
+  margin: 0 auto;
+  width: 100%;
+}
+
+/* ── Result card (scrape result) ── */
+.result-card {
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 14px;
+  margin-top: 12px;
+}
+
+.result-card h3 {
+  margin: 0 0 6px;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.result-card .result-meta {
+  font-size: 12px;
+  color: var(--muted);
+  margin-bottom: 10px;
+}
+
+.result-card a {
+  color: var(--accent);
+  text-decoration: none;
+  font-weight: 500;
+  font-size: 13px;
+}
+
+.result-card a:hover {
+  text-decoration: underline;
+}
+
+/* ── Misc ── */
+a {
+  color: var(--accent);
+  text-decoration: none;
+}
+
+a:hover {
+  text-decoration: underline;
+}
+
+/* ── Scrollbar (theme-aware) ── */
+:root {
+  color-scheme: light;
+}
+
+[data-theme='dark'] {
+  color-scheme: dark;
+}
+
+::-webkit-scrollbar {
+  width: 12px;
+  height: 12px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--bg);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--border);
+  border-radius: 999px;
+  /* inset padding so the thumb reads as a slim pill against the track */
+  border: 3px solid var(--bg);
+  background-clip: padding-box;
+  transition: background var(--transition);
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--muted);
+  background-clip: padding-box;
+}
+
+::-webkit-scrollbar-corner {
+  background: var(--bg);
+}

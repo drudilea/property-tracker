@@ -7,7 +7,9 @@
     "esModuleInterop": true,
     "skipLibCheck": true,
     "resolveJsonModule": true,
+    "jsx": "react-jsx",
     "types": ["node", "electron-vite/node"],
+    "allowArbitraryExtensions": true,
     "noEmit": true
   },
   "include": ["app"]

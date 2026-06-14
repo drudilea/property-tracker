@@ -6,4 +6,10 @@ declare global {
   }
 }
 
+/** Allow importing CSS files as side-effects. */
+declare module '*.css' {
+  const _: Record<string, string>;
+  export default _;
+}
+
 export {};

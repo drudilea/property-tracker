@@ -18,8 +18,11 @@ let isQuitting = false;
 
 function createWindow(): BrowserWindow {
   const win = new BrowserWindow({
-    width: 420,
-    height: 560,
+    width: 520,
+    height: 720,
+    minWidth: 380,
+    minHeight: 560,
+    resizable: true,
     show: true,
     webPreferences: {
       preload: join(__dirname, '../preload/index.mjs'),
