@@ -17,8 +17,8 @@
     "pack": "electron-vite build && electron-builder"
   },
   "keywords": [],
-  "author": "",
-  "license": "ISC",
+  "author": "Leandro Drudi",
+  "license": "MIT",
   "dependencies": {
     "cheerio": "^1.2.0",
     "grammy": "^1.42.0",
