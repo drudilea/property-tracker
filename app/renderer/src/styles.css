@@ -250,11 +250,21 @@ body {
 }
 
 .header-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
   font-weight: 700;
   font-size: 15px;
   color: var(--navy);
   flex: 1;
   -webkit-app-region: drag;
+}
+
+.header-logo {
+  width: 35px;
+  height: 35px;
+  border-radius: 8px;
+  flex-shrink: 0;
 }
 
 [data-theme='dark'] .header-title {
@@ -285,10 +295,16 @@ body {
 
 .header-action {
   -webkit-app-region: no-drag;
+  /* fixed square so the button doesn't resize as its glyph changes (⚙️ ↔ ✕, 🌙 ↔ ☀️) */
+  width: 32px;
+  height: 32px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   background: none;
   border: 0;
   cursor: pointer;
-  padding: 5px;
+  padding: 0;
   border-radius: 6px;
   color: var(--muted);
   font-size: 16px;

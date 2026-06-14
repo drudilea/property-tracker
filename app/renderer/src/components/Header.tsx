@@ -1,4 +1,5 @@
 import type { Theme } from '../theme';
+import logo from '../assets/logo.png';
 
 type Screen = 'home' | 'settings';
 
@@ -24,7 +25,8 @@ export function Header({
   return (
     <header className="header">
       <span className="header-title" aria-label={`Property Tracker v${version}`}>
-        🏠 Property Tracker
+        <img className="header-logo" src={logo} alt="" />
+        Property Tracker
       </span>
       <span className={`header-pill${configured ? ' configured' : ''}`}>
         {configured ? 'Configurado ✓' : '—'}
