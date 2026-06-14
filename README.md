@@ -1,164 +1,74 @@
 # Idealista Tracker
 
-Scrapes idealista listings and saves them to Notion. Includes a Telegram bot for managing apartments from your phone.
+A local, cross-platform **Electron desktop app** for an apartment search: it
+captures Idealista listings, scrapes their details with a real Chrome, and saves
+them to **your own Notion database**. 100% local — your data lives in your Notion
+and on your machine, no shared backend.
 
-## Features
+## What it does
 
-- **Scrape listings**: Send an idealista link → extracts title, price, location, photos, contact info, features
-- **Notion database**: All data stored in a structured Notion DB with status tracking, scoring, and notes
-- **Telegram bot**: Search by phone/name, change status, add notes, schedule visits
-- **Calendar integration**: One-click Google Calendar event creation with location and guest invite
-- **Deduplication**: Detects if a listing was already saved
-- **Photo backup**: Downloads all listing photos locally in case the ad is removed
+- **Capture** a listing three ways:
+  - **Paste a link** in the app (instant, desktop).
+  - **❤️ it on Idealista** from any device — the app reads your favorites and syncs the new ones.
+  - **Send it to an optional Telegram bot** (off by default; mobile push while the app is open).
+- **Scrape** title, price, location, features, contact and photos using your **installed Chrome** (so it gets past the anti-bot).
+- **Save to Notion** (with de-duplication). You organize, filter and track in Notion.
+- **Schedule visits**: builds a prefilled Google Calendar event and marks the listing `visita_programada`.
 
-## Setup
+## Requirements
 
-### Prerequisites
+- **Node.js 18+** and npm (to run/build from source)
+- **Google Chrome** installed
+- A **Notion** account + an internal integration token
+- _(optional)_ A **Telegram** bot token (from @BotFather) for mobile capture
 
-- Node.js 18+
-- Google Chrome installed
-- A Notion account
-- A Telegram account
-
-### 1. Install dependencies
+## Develop
 
 ```bash
 npm install
-npx playwright install chromium
+npm run dev
 ```
 
-### 2. Configure Notion
-
-1. Go to https://www.notion.so/my-integrations → create a new integration
-2. Create a full-page database in Notion
-3. Share the database with your integration (click `...` → Connections → add it)
-4. Copy the integration token and the database ID from the URL
-
-### 3. Configure Telegram
-
-1. Open Telegram → search @BotFather → `/newbot`
-2. Copy the bot token
-
-### 4. Environment variables
+## Package the app
 
 ```bash
-cp .env.example .env
+npm run pack   # → release/ : .app on macOS, portable .exe on Windows
 ```
 
-Fill in your `.env`:
+Unsigned builds show a one-time security prompt (macOS Gatekeeper "Open Anyway" /
+Windows SmartScreen "Run anyway"). Building for both platforms is done via CI
+(GitHub Actions) since Windows can't be built reliably from macOS.
 
-```
-NOTION_TOKEN=secret_...
-NOTION_DATABASE_ID=...
-TELEGRAM_BOT_TOKEN=...
-GUEST_EMAIL=persona@example.com
-```
+## First-run setup (inside the app)
 
-`GUEST_EMAIL` is optional. If you leave it empty, the Calendar invitation is created without adding a guest.
+1. **Notion** — create an internal integration at `notion.so/my-integrations`,
+   share your database with it, then paste the **token** + **database id** and
+   click _Conectar_.
+2. **Idealista** — click _Iniciar sesión en Idealista_ and log in (the window
+   stays open and is reused).
+3. **Capture** — paste a link, _Sincronizar favoritos_, or enable Telegram.
 
-### 5. Run
+The token, chosen database, and the dedicated browser profile are stored under
+the OS user-data directory (e.g. `~/Library/Application Support/Idealista Tracker/`
+on macOS). Nothing is committed or shared.
 
-**CLI** (one-off scrape):
+## Scripts
 
-```bash
-npm run scrape "https://www.idealista.com/inmueble/12345678/"
-```
+| Script              | What it does                            |
+| ------------------- | --------------------------------------- |
+| `npm run dev`       | Run the app in development (hot reload) |
+| `npm run build:app` | Build main/preload/renderer bundles     |
+| `npm run pack`      | Build + package with electron-builder   |
+| `npm test`          | Run unit tests (vitest)                 |
+| `npm run typecheck` | `tsc --noEmit`                          |
+| `npm run lint`      | ESLint                                  |
+| `npm run format`    | Prettier                                |
 
-**Telegram bot** (long-running):
+## Architecture (brief)
 
-```bash
-npm run bot
-```
-
-**Run in background** (survives terminal close):
-
-```bash
-nohup npm run bot > bot.log 2>&1 &
-```
-
-Check if it's running:
-
-```bash
-ps aux | grep "tsx src/bot" | grep -v grep
-```
-
-View logs:
-
-```bash
-tail -f bot.log
-```
-
-Stop the bot:
-
-```bash
-pkill -f "tsx src/bot"
-```
-
-## Windows portable package
-
-If you want to hand someone a ready-to-run `.zip` for Windows, the simplest approach is:
-
-1. Open the project on a Windows machine
-2. Install dependencies with `npm install`
-3. Build a portable folder with:
-
-```bash
-npm run package:portable
-```
-
-If you already filled the real `.env` with the recipient's keys and want that file copied into the final package, run:
-
-```bash
-npm run package:portable -- --env-source=.env
-```
-
-That creates `portable/idealista-bot/` with:
-
-- compiled app in `dist/`
-- dependencies in `node_modules/`
-- empty runtime folders (`data/`, `logs/`, `.browser-profile/`)
-- Windows launchers:
-  - `Inicializar Navegador.cmd`
-  - `Iniciar Bot.cmd`
-  - `Detener Bot.cmd`
-  - `Ver Logs.cmd`
-
-Then zip that `portable/idealista-bot/` folder and send it.
-
-### Windows notes
-
-- Build the portable folder on Windows, not macOS, for best compatibility
-- Google Chrome must be installed on the Windows machine
-- Node.js 18+ must be installed on the Windows machine for this first portable version
-- The browser profile inside `.browser-profile/` is local to that folder and should be initialized on the same Windows machine where it will run
-- On first run, execute `Inicializar Navegador.cmd`, accept cookies and/or log in to Idealista, then close Chrome
-- The bot keeps running after double click; it stops when the PC shuts down or when `Detener Bot.cmd` is used
-
-## Bot commands
-
-| Command     | Description               | Example                                        |
-| ----------- | ------------------------- | ---------------------------------------------- |
-| Send a link | Scrape and save to Notion | `https://www.idealista.com/inmueble/12345678/` |
-| `/buscar`   | Search by phone or name   | `/buscar 612345678`                            |
-| `/estado`   | Change apartment status   | `/estado 12345678 contactado`                  |
-| `/nota`     | Add contact note          | `/nota 12345678 Llamé por WhatsApp`            |
-| `/visita`   | Create Calendar event     | `/visita 12345678 1504 1800`                   |
-| `/ayuda`    | Show help                 | `/ayuda`                                       |
-
-**Valid statuses**: `nuevo`, `contactado`, `sin_respuesta`, `visita_programada`, `visitado`, `descartado`, `interesado`
-
-**Visit date format**: `DDMM HHMM` (24h) — e.g., `1504 1800` = April 15, 18:00
-
-## Project structure
-
-```
-src/
-  index.ts      # CLI entry point
-  bot.ts        # Telegram bot entry point
-  scraper.ts    # Playwright scraper for idealista
-  notion.ts     # Notion API client (search, create, update)
-  types.ts      # Shared types
-data/
-  images/       # Downloaded listing photos
-  snapshots/    # Saved HTML for offline testing
-```
+- **Electron main** (Node) runs the business logic from `src/` (scraper, notion,
+  calendar) plus the services in `app/main/` (scrape, favorites, visits, telegram).
+- **Renderer** is a minimal control panel; it talks to the main process only
+  through a typed IPC bridge (`app/preload`, `app/shared/ipc-contract.ts`).
+- A **single shared Chrome session** (login / scrape / favorites) is serialized by
+  a mutex so the browser profile is never opened twice at once.
