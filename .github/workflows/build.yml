@@ -3,6 +3,7 @@ name: Build apps
 on:
   push:
     branches: [main]
+    tags: ['v*']
   workflow_dispatch:
 
 jobs:
@@ -49,3 +50,34 @@ jobs:
           name: ${{ matrix.artifact }}
           path: release/**
           if-no-files-found: error
+
+  # On a version tag (v*), gather both platforms' builds into one GitHub Release
+  # so users get a stable download link (and the in-app update check can see it).
+  release:
+    name: Publish release
+    needs: build
+    if: startsWith(github.ref, 'refs/tags/v')
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Download build artifacts
+        uses: actions/download-artifact@634f93cb2916e3fdff6788551b99b062d0335ce0 # v5
+        with:
+          path: dist
+
+      - name: Create the GitHub Release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          shopt -s globstar nullglob
+          files=(dist/**/*.zip dist/**/*.exe)
+          if [ ${#files[@]} -eq 0 ]; then
+            echo "No build artifacts found to release." >&2
+            exit 1
+          fi
+          gh release create "${GITHUB_REF_NAME}" \
+            --repo "${GITHUB_REPOSITORY}" \
+            --title "${GITHUB_REF_NAME}" \
+            --generate-notes \
+            "${files[@]}"

@@ -10,7 +10,7 @@ asarUnpack:
   - '**/node_modules/playwright/**'
   - '**/node_modules/playwright-core/**'
 mac:
-  target: dir
+  target: zip
   category: public.app-category.utilities
   icon: app/main/assets/icon.png
 win:
