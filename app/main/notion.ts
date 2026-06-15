@@ -1,4 +1,5 @@
 import type { Apartment, ApartmentStatus } from '../shared/apartment';
+import type { ApartmentRef } from '../shared/ipc-contract';
 import { errorMessage } from './result';
 
 const NOTION_VERSION = '2022-06-28';
@@ -398,6 +399,34 @@ export function createNotionClient(token: string, databaseId: string) {
       await notionPatch(`/pages/${pageId}`, {
         properties: { Estado: { select: { name: status } } },
       });
+    },
+
+    /** Return a flat list of all apartments in the database. Pages through the
+     * entire result set (has_more / next_cursor) and skips entries with no
+     * Idealista ID. Callers must ensure the schema is initialised first. */
+    async listApartments(): Promise<ApartmentRef[]> {
+      await ensureSchema();
+      const apartments: ApartmentRef[] = [];
+      let cursor: string | undefined;
+
+      do {
+        const body: Record<string, unknown> = { page_size: 100 };
+        if (cursor) body.start_cursor = cursor;
+
+        const data = await notionFetch(`/databases/${databaseId}/query`, body);
+
+        for (const page of data.results ?? []) {
+          const idealistaId = extractProperty(page, 'Idealista ID', 'rich_text');
+          if (!idealistaId) continue;
+          const title =
+            extractProperty(page, titlePropertyName, 'title') || 'Sin título';
+          apartments.push({ idealistaId, title });
+        }
+
+        cursor = data.has_more ? data.next_cursor : undefined;
+      } while (cursor);
+
+      return apartments;
     },
   };
 }

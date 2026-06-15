@@ -119,6 +119,34 @@ body {
   background: var(--surface);
 }
 
+.field select {
+  display: block;
+  width: 100%;
+  margin-top: 8px;
+  padding: 8px 11px;
+  border: 1.5px solid var(--border);
+  border-radius: 8px;
+  font-size: 14px;
+  background: var(--surface-2);
+  color: var(--text);
+  transition: border-color var(--transition), box-shadow var(--transition),
+    background var(--transition);
+  outline: none;
+  cursor: pointer;
+  appearance: auto;
+}
+
+.field select:focus {
+  border-color: var(--accent);
+  box-shadow: var(--focus-ring);
+  background: var(--surface);
+}
+
+.field select:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
 /* ── Buttons ── */
 .btn,
 .btn-secondary {
@@ -367,6 +395,93 @@ body {
 
 .result-card a:hover {
   text-decoration: underline;
+}
+
+/* ── Inline help affordance ── */
+/* Keep the label text and its "?" help button centered on the same line. */
+.field-label-row {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.help {
+  display: inline-flex;
+  position: relative;
+}
+
+.help-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 17px;
+  height: 17px;
+  padding: 0;
+  border-radius: 50%;
+  border: 1.5px solid var(--border);
+  background: var(--surface-2);
+  color: var(--muted);
+  font-size: 10px;
+  font-weight: 700;
+  line-height: 1;
+  cursor: pointer;
+  transition: background var(--transition), border-color var(--transition),
+    color var(--transition);
+  outline: none;
+  flex-shrink: 0;
+}
+
+.help-btn:hover {
+  background: var(--border);
+  color: var(--text);
+}
+
+.help-btn:focus-visible {
+  box-shadow: var(--focus-ring);
+}
+
+.help-popover {
+  position: absolute;
+  top: calc(100% + 6px);
+  /* Open toward the right, anchored to the "?" icon with a slight start to its
+     left, so the popover never spills off the left window edge. */
+  left: -8px;
+  z-index: 100;
+  width: 240px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  padding: 12px 14px;
+  font-size: 12.5px;
+  color: var(--text);
+  line-height: 1.5;
+}
+
+.help-popover-body {
+  margin-bottom: 0;
+}
+
+.help-popover-body strong {
+  color: var(--text);
+  font-weight: 600;
+}
+
+.help-popover-body code {
+  font-size: 11px;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  padding: 1px 4px;
+  word-break: break-all;
+}
+
+.help-guide-btn {
+  margin-top: 10px;
+  padding: 5px 12px;
+  font-size: 12px;
+  width: 100%;
+  justify-content: center;
 }
 
 /* ── Misc ── */

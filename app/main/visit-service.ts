@@ -1,8 +1,22 @@
 import { buildNotionUrl } from './notion';
 import { buildCalendarUrl } from './calendar';
 import { notionClientFromConfig } from './notion-session';
-import type { CreateVisitResult } from '../shared/ipc-contract';
+import type { CreateVisitResult, ListApartmentsResult } from '../shared/ipc-contract';
 import { errorMessage } from './result';
+
+/** Return all apartments from the configured Notion database. */
+export async function listApartments(
+  configPath: string,
+): Promise<ListApartmentsResult> {
+  const session = notionClientFromConfig(configPath);
+  if (!session.ok) return { ok: false, error: session.error };
+  try {
+    const apartments = await session.client.listApartments();
+    return { ok: true, apartments };
+  } catch (err) {
+    return { ok: false, error: errorMessage(err) };
+  }
+}
 
 /** Build a Google Calendar visit URL for a listing and mark it scheduled.
  * The renderer shows the URL as a link; opening is left to the user. */

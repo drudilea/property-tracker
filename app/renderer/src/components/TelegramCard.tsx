@@ -5,6 +5,7 @@ import { useAsyncAction } from '../hooks/useAsyncAction';
 import { Card } from './Card';
 import { Field } from './Field';
 import { Button } from './Button';
+import { Help } from './Help';
 import { StatusLine } from './StatusLine';
 
 interface TelegramCardProps {
@@ -44,6 +45,13 @@ export function TelegramCard({ config, onConfigUpdate }: TelegramCardProps) {
         onChange={setTgToken}
         placeholder="123456:ABC…"
         disabled={isLoading}
+        help={
+          <Help href="https://t.me/BotFather">
+            Abrí <strong>@BotFather</strong> en Telegram, mandá el comando{' '}
+            <code>/newbot</code>, seguí los pasos y copiá el token que te da al
+            final.
+          </Help>
+        }
       />
       <div className="btn-row">
         <Button

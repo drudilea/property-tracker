@@ -5,6 +5,7 @@ import { useAsyncAction } from '../hooks/useAsyncAction';
 import { Card } from './Card';
 import { Field } from './Field';
 import { Button } from './Button';
+import { Help } from './Help';
 import { StatusLine } from './StatusLine';
 
 interface NotionCardProps {
@@ -31,6 +32,15 @@ export function NotionCard({ config, onConfigUpdate, onRefresh }: NotionCardProp
         onChange={setToken}
         placeholder="ntn_… o secret_…"
         disabled={isBusy}
+        help={
+          <Help href="https://www.notion.so/my-integrations">
+            Andá a <strong>notion.so/my-integrations</strong>, creá una{' '}
+            <em>integración interna</em> y copiá el "Internal Integration Secret". Después
+            abrí tu base de datos en Notion, hacé clic en{' '}
+            <strong>⋯ → Conexiones</strong> y conectá la integración para que tenga
+            acceso.
+          </Help>
+        }
       />
       <Field
         label="Database ID de Notion"
@@ -38,6 +48,14 @@ export function NotionCard({ config, onConfigUpdate, onRefresh }: NotionCardProp
         onChange={setDbId}
         placeholder="id de la base de datos"
         disabled={isBusy}
+        help={
+          <Help href="https://www.notion.so">
+            El ID está en la URL de la base de datos. Es el bloque de 32 caracteres que
+            aparece después del nombre de tu workspace y antes del{' '}
+            <code>?v=</code>. Ejemplo:{' '}
+            <code>notion.so/miworkspace/<strong>abc123…</strong>?v=…</code>
+          </Help>
+        }
       />
       <div className="btn-row">
         <Button

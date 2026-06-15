@@ -81,6 +81,7 @@ export function App() {
       <Header
         version={status.appVersion}
         configured={status.configured}
+        showScreenToggle={status.configured}
         theme={currentTheme}
         screen={screen}
         onThemeToggle={handleThemeToggle}

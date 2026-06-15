@@ -7,7 +7,7 @@ import type { AppConfig } from './config';
 import { validateNotion, saveToNotion } from './notion-service';
 import { syncFavorites } from './favorites-service';
 import { loginIdealista } from './idealista-service';
-import { createVisit } from './visit-service';
+import { createVisit, listApartments } from './visit-service';
 import { startTelegramBot, isTelegramRunning } from './telegram-service';
 import type { Apartment } from '../shared/apartment';
 
@@ -42,6 +42,10 @@ export function registerIpcHandlers(configPath: string): void {
     IpcInvokeChannel.createVisit,
     (_e, idealistaId: string, startISO: string) =>
       createVisit(configPath, idealistaId, startISO),
+  );
+
+  ipcMain.handle(IpcInvokeChannel.listApartments, () =>
+    listApartments(configPath),
   );
 
   ipcMain.handle(IpcInvokeChannel.openExternal, (_e, url: string) =>

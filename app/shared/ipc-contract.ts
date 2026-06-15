@@ -1,6 +1,15 @@
 import type { AppConfig } from '../main/config';
 import type { Apartment } from './apartment';
 
+export interface ApartmentRef {
+  idealistaId: string;
+  title: string;
+}
+
+export type ListApartmentsResult =
+  | { ok: true; apartments: ApartmentRef[] }
+  | { ok: false; error: string };
+
 export type ScrapeResult =
   | { ok: true; apartment: Apartment }
   | { ok: false; error: string };
@@ -39,6 +48,7 @@ export interface IpcInvokeApi {
   syncFavorites(): Promise<FavoritesSyncResult>;
   loginIdealista(): Promise<{ ok: boolean; error?: string }>;
   createVisit(idealistaId: string, startISO: string): Promise<CreateVisitResult>;
+  listApartments(): Promise<ListApartmentsResult>;
   openExternal(url: string): Promise<void>;
   applyTelegram(): Promise<{ ok: boolean; error?: string }>;
   telegramRunning(): Promise<boolean>;
@@ -56,6 +66,7 @@ export const IpcInvokeChannel: Record<keyof IpcInvokeApi, string> = {
   syncFavorites: 'favorites:sync',
   loginIdealista: 'idealista:login',
   createVisit: 'visit:create',
+  listApartments: 'notion:listApartments',
   openExternal: 'shell:openExternal',
   applyTelegram: 'telegram:apply',
   telegramRunning: 'telegram:status',

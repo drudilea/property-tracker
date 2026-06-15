@@ -6,6 +6,7 @@ type Screen = 'home' | 'settings';
 interface HeaderProps {
   version: string;
   configured: boolean;
+  showScreenToggle: boolean;
   theme: Theme;
   screen: Screen;
   onThemeToggle: () => void;
@@ -15,6 +16,7 @@ interface HeaderProps {
 export function Header({
   version,
   configured,
+  showScreenToggle,
   theme,
   screen,
   onThemeToggle,
@@ -29,7 +31,7 @@ export function Header({
         Property Tracker
       </span>
       <span className={`header-pill${configured ? ' configured' : ''}`}>
-        {configured ? 'Configurado ✓' : '—'}
+        {configured ? 'Configurado ✓' : 'Sin configurar'}
       </span>
       <button
         className="header-action"
@@ -39,14 +41,16 @@ export function Header({
       >
         {isDark ? '☀️' : '🌙'}
       </button>
-      <button
-        className="header-action"
-        onClick={onScreenToggle}
-        title={screen === 'settings' ? 'Volver al inicio' : 'Ajustes'}
-        aria-label={screen === 'settings' ? 'Volver al inicio' : 'Ajustes'}
-      >
-        {screen === 'settings' ? '✕' : '⚙️'}
-      </button>
+      {showScreenToggle && (
+        <button
+          className="header-action"
+          onClick={onScreenToggle}
+          title={screen === 'settings' ? 'Volver al inicio' : 'Ajustes'}
+          aria-label={screen === 'settings' ? 'Volver al inicio' : 'Ajustes'}
+        >
+          {screen === 'settings' ? '✕' : '⚙️'}
+        </button>
+      )}
     </header>
   );
 }
