@@ -14,7 +14,7 @@
     "lint": "eslint .",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
-    "pack": "electron-vite build && electron-builder"
+    "pack": "electron-vite build && electron-builder --publish never"
   },
   "keywords": [],
   "author": "Leandro Drudi",
