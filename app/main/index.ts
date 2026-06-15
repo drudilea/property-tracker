@@ -16,6 +16,19 @@ let mainWindow: BrowserWindow | null = null;
 let _tray: Tray | null = null;
 let isQuitting = false;
 
+const gotLock = app.requestSingleInstanceLock();
+if (!gotLock) {
+  app.quit();
+} else {
+  app.on('second-instance', () => {
+    if (mainWindow) {
+      mainWindow.show();
+      if (mainWindow.isMinimized()) mainWindow.restore();
+      mainWindow.focus();
+    }
+  });
+}
+
 function createWindow(): BrowserWindow {
   const win = new BrowserWindow({
     width: 520,
@@ -66,7 +79,7 @@ app.whenReady().then(() => {
   if (loadConfig(CONFIG_PATH).telegramBotToken)
     void startTelegramBot(CONFIG_PATH);
   createWindow();
-  _tray = createTray(() => mainWindow);
+  _tray = createTray(() => mainWindow, CONFIG_PATH);
 
   app.on('activate', () => {
     if (BrowserWindow.getAllWindows().length === 0) createWindow();
