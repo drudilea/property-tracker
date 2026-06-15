@@ -9,6 +9,7 @@ import { syncFavorites } from './favorites-service';
 import { loginIdealista } from './idealista-service';
 import { createVisit, listApartments } from './visit-service';
 import { startTelegramBot, isTelegramRunning } from './telegram-service';
+import { checkForUpdate } from './updater';
 import type { Apartment } from '../shared/apartment';
 
 /** Register all ipcMain handlers. `configPath` is resolved once at startup. */
@@ -54,4 +55,5 @@ export function registerIpcHandlers(configPath: string): void {
 
   ipcMain.handle(IpcInvokeChannel.applyTelegram, () => startTelegramBot(configPath));
   ipcMain.handle(IpcInvokeChannel.telegramRunning, () => isTelegramRunning());
+  ipcMain.handle(IpcInvokeChannel.checkForUpdate, () => checkForUpdate(app.getVersion()));
 }

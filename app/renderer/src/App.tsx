@@ -1,10 +1,11 @@
 import { useState, useEffect, useCallback } from 'react';
-import type { AppStatus } from '../../shared/ipc-contract';
+import type { AppStatus, UpdateInfo } from '../../shared/ipc-contract';
 import type { AppConfig } from '../../main/config';
 import type { ThemePref } from './theme';
 import { resolveTheme, loadThemePref, saveThemePref } from './theme';
 import { api } from './api';
 import { Header } from './components/Header';
+import { UpdateBanner } from './components/UpdateBanner';
 import { Home } from './components/Home';
 import { Settings } from './components/Settings';
 import { Onboarding } from './components/Onboarding';
@@ -14,6 +15,7 @@ type Screen = 'home' | 'settings';
 export function App() {
   const [status, setStatus] = useState<AppStatus | null>(null);
   const [config, setConfig] = useState<AppConfig | null>(null);
+  const [update, setUpdate] = useState<UpdateInfo | null>(null);
   const [screen, setScreen] = useState<Screen>('home');
   const [themePref, setThemePref] = useState<ThemePref>(loadThemePref);
   const [systemDark, setSystemDark] = useState(
@@ -53,6 +55,11 @@ export function App() {
     void refresh();
   }, [refresh]);
 
+  // Check for a newer release once on mount
+  useEffect(function checkUpdate() {
+    api.checkForUpdate().then(setUpdate).catch(() => undefined);
+  }, []);
+
   function handleThemeToggle() {
     const next: ThemePref =
       resolveTheme(themePref, systemDark) === 'dark' ? 'light' : 'dark';
@@ -87,6 +94,7 @@ export function App() {
         onThemeToggle={handleThemeToggle}
         onScreenToggle={() => setScreen((s) => (s === 'home' ? 'settings' : 'home'))}
       />
+      <UpdateBanner update={update} />
       {showOnboarding ? (
         <Onboarding config={config} onConfigUpdate={handleConfigUpdate} onRefresh={refresh} />
       ) : screen === 'home' ? (

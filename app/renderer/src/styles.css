@@ -345,6 +345,61 @@ body {
   color: var(--text);
 }
 
+/* ── Update banner ── */
+.update-banner {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 20px;
+  background: var(--surface-2);
+  border-bottom: 2px solid var(--accent);
+  font-size: 13px;
+  color: var(--text);
+  transition: background var(--transition), border-color var(--transition);
+}
+
+.update-banner-text {
+  flex: 1;
+}
+
+.update-banner-actions {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-shrink: 0;
+}
+
+.update-banner-btn {
+  padding: 4px 12px;
+  font-size: 12px;
+}
+
+.update-banner-close {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  padding: 0;
+  border: 0;
+  border-radius: 4px;
+  background: none;
+  color: var(--muted);
+  font-size: 12px;
+  cursor: pointer;
+  transition: background var(--transition), color var(--transition);
+  outline: none;
+}
+
+.update-banner-close:hover {
+  background: var(--border);
+  color: var(--text);
+}
+
+.update-banner-close:focus-visible {
+  box-shadow: var(--focus-ring);
+}
+
 /* ── Grid layout (cards) ── */
 .grid {
   display: grid;

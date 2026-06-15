@@ -36,6 +36,12 @@ export interface AppStatus {
   configured: boolean;
 }
 
+export interface UpdateInfo {
+  updateAvailable: boolean;
+  latestVersion?: string;
+  url?: string;
+}
+
 /** Invoke methods the renderer calls on the main process. Single source for
  * their argument + return types — the preload bridge and RendererApi derive from it. */
 export interface IpcInvokeApi {
@@ -52,6 +58,7 @@ export interface IpcInvokeApi {
   openExternal(url: string): Promise<void>;
   applyTelegram(): Promise<{ ok: boolean; error?: string }>;
   telegramRunning(): Promise<boolean>;
+  checkForUpdate(): Promise<UpdateInfo>;
 }
 
 /** The invoke channel string for each method. Typed against IpcInvokeApi so
@@ -70,6 +77,7 @@ export const IpcInvokeChannel: Record<keyof IpcInvokeApi, string> = {
   openExternal: 'shell:openExternal',
   applyTelegram: 'telegram:apply',
   telegramRunning: 'telegram:status',
+  checkForUpdate: 'app:checkForUpdate',
 };
 
 /** Event channels the main process pushes to the renderer. */
