@@ -41,9 +41,37 @@ npm run dev
 npm run pack   # → release/ : .app on macOS, portable .exe on Windows
 ```
 
-Unsigned builds show a one-time security prompt (macOS Gatekeeper "Open Anyway" /
-Windows SmartScreen "Run anyway"). Building for both platforms is done via CI
-(GitHub Actions) since Windows can't be built reliably from macOS.
+Building for both platforms is done via CI (GitHub Actions), since Windows can't
+be built reliably from macOS.
+
+## Installing an unsigned build
+
+The apps are **not code-signed** (no paid Apple/Windows developer certificate), so
+both systems warn that the developer is "unidentified" the first time. It's a
+trust/identity warning, not malware — you only need to clear it once per machine.
+
+### macOS
+
+Gatekeeper may block the app and (especially for apps downloaded as a zip) the
+_Open Anyway_ button sometimes doesn't appear in **System Settings → Privacy &
+Security**. In that case, remove the quarantine flag from a terminal:
+
+```bash
+# Inspect the flags (optional): a "com.apple.quarantine" entry is what blocks it
+xattr -l "/Applications/Property Tracker.app"
+
+# Remove the quarantine flag, then open the app normally
+xattr -dr com.apple.quarantine "/Applications/Property Tracker.app"
+```
+
+(`-d` deletes the attribute, `-r` recurses into the app bundle. Adjust the path to
+wherever you put the `.app`.) If _Open Anyway_ does show up in Settings, that works
+too — either is fine.
+
+### Windows
+
+SmartScreen shows "Windows protected your PC". Click **More info → Run anyway**.
+You may also need to allow the file in your antivirus the first time.
 
 ## First-run setup (inside the app)
 
