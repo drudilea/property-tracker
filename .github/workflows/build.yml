@@ -74,12 +74,16 @@ jobs:
           # build succeeds. The macOS app opens via Gatekeeper "Open Anyway".
           CSC_IDENTITY_AUTO_DISCOVERY: false
 
-      # Artifacts here are only the transfer mechanism into the release job.
+      # Upload only the top-level distributables (the packaged zip / portable
+      # exe), NOT the unpacked mac-arm64/ and win-unpacked/ dirs — otherwise the
+      # raw unpacked exe and electron-builder's elevate.exe leak into the release.
       - name: Upload build artifact
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
         with:
           name: ${{ matrix.artifact }}
-          path: release/**
+          path: |
+            release/*.zip
+            release/*.exe
           if-no-files-found: error
 
   # Gather both platforms' builds into one GitHub Release (stable download link
